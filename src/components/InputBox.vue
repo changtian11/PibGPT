@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { NButton, NTooltip, NIcon } from 'naive-ui';
 import { SendFilled, DocumentAdd } from '@vicons/carbon';
+
+const inputBoxString = ref("");
+
+const emit = defineEmits(
+    ['submit']
+)
+
+const submitText = () => {
+    if (inputBoxString.value.length > 0) {
+        emit('submit', inputBoxString.value)
+    }
+    inputBoxString.value = "";
+}
+
 </script>
 
 <template>
     <div class="input-container box_shadow_level_one hoverable">
         <div class="input-inner">
             <div class="input-wrap">
-                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！"></input>
+                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="inputBoxString"
+                    @keyup.enter="submitText()"></input>
             </div>
             <div class="side-buttons">
                 <NTooltip placement="top" trigger="hover">
@@ -24,7 +40,7 @@ import { SendFilled, DocumentAdd } from '@vicons/carbon';
                 </NTooltip>
                 <NTooltip placement="top" trigger="hover">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large">
+                        <NButton quaternary :bordered="false" size="large" @click="submitText()">
                             <template #icon>
                                 <NIcon>
                                     <SendFilled />
