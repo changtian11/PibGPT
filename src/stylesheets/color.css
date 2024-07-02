@@ -1,5 +1,13 @@
 :root {
-    --page-bg: #E5E7EF;
-    --item-bg: #FFFFFF;
-    --border: #E5E5E5;
+    --page-bg: #f3f3f4;
+    --item-bg: #ffffff;
+    --item-focus-bg: #d3d3d3;
+    --border: #e5e5e5;
+    --sender-text-color: #fff;
+    --sender-bg: #0b93f6;
+    --receiver-text-color: black;
+    --receiver-bg: #fff;
+    --accent-color: #208320;
+    --highlight-color: #29a829;
+    --active-color:#175E17;
 }

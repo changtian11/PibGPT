@@ -5,7 +5,7 @@
 }
 
 .box_shadow_level_one.hoverable {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .box_shadow_level_one.hoverable:hover {
