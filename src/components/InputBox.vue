@@ -5,12 +5,18 @@ import { SendFilled, DocumentAdd } from '@vicons/carbon';
 
 const userInput = ref("");
 
+defineProps({
+    isAwaitingResponse: Boolean,
+    isAnimationPlaying: Boolean
+})
+
 const emit = defineEmits(
     ['submit']
 )
 
 const submitText = () => {
-    if (userInput.value.length > 0) {
+    //Reject blank submission
+    if (userInput.value.trim() !== '') {
         emit('submit', userInput.value.trim())
     }
     userInput.value = "";

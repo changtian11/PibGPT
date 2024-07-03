@@ -1,17 +1,52 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { NButton, NTooltip, NIcon } from 'naive-ui';
 import { Copy, Share } from '@vicons/carbon';
 import type { ChatMessage } from '../types/types';
 
 interface Props {
     message: ChatMessage,
-    userPfpUrl?: string;
+    userPfpUrl: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-    userPfpUrl: "https://picsum.photos/seed/picsum/200"
-});
+const props = defineProps<Props>();
+const emit = defineEmits(['animation-playing']);
+const animatedText = ref("");
+const isAnimationPlaying = ref(false);
 
+const typeWriterEffect = () => {
+    if (!props.message.isAnimated) return;
+    else {
+        isAnimationPlaying.value = true;
+        const text = props.message.content;
+        const textLength = props.message.content.length;
+        let index = 0;
+        function addNextChar() {
+            if (index < textLength) {
+                animatedText.value += text[index];
+                index++;
+                setTimeout(addNextChar, Math.random() * 60 + 60)
+            }
+            else {
+                isAnimationPlaying.value = false;
+            }
+        }
+        addNextChar();
+    }
+}
+
+watch(isAnimationPlaying, (newVal, oldVal) => {
+    if (newVal && !oldVal) {
+        emit('animation-playing', true);
+    }
+    else {
+        emit('animation-playing', false);
+    }
+})
+
+watch(() => props.message.isAnimated, (isAnimated) => {
+    if (isAnimated) typeWriterEffect();
+})
 
 </script>
 
@@ -42,14 +77,14 @@ const props = withDefaults(defineProps<Props>(), {
                     </div>
                     <div v-else>
                         <img v-if="message.type === 'image'" class="image" :src="message.content"></img>
-                        <div v-else class="text">{{ message.content }}
-                        </div>
-                        <div class="functionButtons">
+                        <div v-else-if="message.isAnimated" class="text">{{ animatedText }}</div>
+                        <div v-else class="text">{{ message.content }}</div>
+                        <div v-if="!isAnimationPlaying" class="functionButtons">
                             <NTooltip placement="top" trigger="hover" to=".functionButtons">
                                 <template #trigger>
                                     <NButton quaternary :bordered="false" size="small">
                                         <template #icon>
-                                            <NIcon :size="20">
+                                            <NIcon :size="18">
                                                 <Copy />
                                             </NIcon>
                                         </template>
@@ -61,7 +96,7 @@ const props = withDefaults(defineProps<Props>(), {
                                 <template #trigger>
                                     <NButton quaternary :bordered="false" size="small">
                                         <template #icon>
-                                            <NIcon :size="20">
+                                            <NIcon :size="18">
                                                 <Share />
                                             </NIcon>
                                         </template>
@@ -224,8 +259,8 @@ const props = withDefaults(defineProps<Props>(), {
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 8px;
-    padding-top: 8px;
-    margin-bottom: 4px;
+    padding-top: 4px;
+    margin-bottom: 0;
     justify-content: flex-end;
 }
 
