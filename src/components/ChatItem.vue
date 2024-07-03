@@ -1,31 +1,77 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { NButton, NTooltip, NIcon } from 'naive-ui';
+import { Copy, Share } from '@vicons/carbon';
+import type { ChatMessage } from '../types/types';
 
-const props = defineProps({
-    isSender: Boolean,
-    textString: String,
-    userPfpUrl: String
-})
+interface Props {
+    message: ChatMessage,
+    userPfpUrl?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    userPfpUrl: "https://picsum.photos/seed/picsum/200"
+});
+
 
 </script>
 
 <template>
-    <div class="chat-item-container">
-        <div v-if="isSender" class="item-line">
+    <div class="chat-item">
+        <div v-if="message.sender === 'user'" class="message">
             <div class="pfp-placeholder"></div>
-            <div class="main-content sender">
-                <div class="bubble">{{ textString }}</div>
+            <div class="message-content sender">
+                <div class="bubble">
+                    <img v-if="message.type === 'image'" class="image" :src="message.content"></img>
+                    <div v-else class="text">{{ message.content }}</div>
+                </div>
             </div>
             <div class="pfp">
                 <img :src="props.userPfpUrl" alt="User">
             </div>
         </div>
-        <div v-else class="item-line">
+        <div v-else class="message">
             <div class="pfp">
-                <img src="https://picsum.photos/seed/picsum/200" alt="Pib">
+                <img src="../assets/robot-green.png" alt="Pib">
             </div>
-            <div class="main-content receiver">
-                <div class="bubble">{{ textString }}</div>
+            <div class="message-content receiver">
+                <div class="bubble">
+                    <div v-if="message.isLoading" class="loading">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <div v-else>
+                        <img v-if="message.type === 'image'" class="image" :src="message.content"></img>
+                        <div v-else class="text">{{ message.content }}
+                        </div>
+                        <div class="functionButtons">
+                            <NTooltip placement="top" trigger="hover" to=".functionButtons">
+                                <template #trigger>
+                                    <NButton quaternary :bordered="false" size="small">
+                                        <template #icon>
+                                            <NIcon :size="20">
+                                                <Copy />
+                                            </NIcon>
+                                        </template>
+                                    </NButton>
+                                </template>
+                                复制
+                            </NTooltip>
+                            <NTooltip placement="top" trigger="hover" to=".functionButtons">
+                                <template #trigger>
+                                    <NButton quaternary :bordered="false" size="small">
+                                        <template #icon>
+                                            <NIcon :size="20">
+                                                <Share />
+                                            </NIcon>
+                                        </template>
+                                    </NButton>
+                                </template>
+                                分享
+                            </NTooltip>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="pfp-placeholder"></div>
         </div>
@@ -33,14 +79,14 @@ const props = defineProps({
 </template>
 
 <style>
-.chat-item-container {
+.chat-item {
     margin: 1rem 0 0;
     color: var(--item-bg);
 }
 </style>
 
 <style scope>
-.item-line {
+.message {
     display: flex;
     width: 100%;
     gap: 28px;
@@ -72,18 +118,18 @@ const props = defineProps({
     -webkit-user-drag: none;
 }
 
-.main-content {
+.message-content {
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
     flex-grow: 1;
 }
 
-.main-content.sender {
+.message-content.sender {
     justify-content: flex-end;
 }
 
-.main-content.receiver {
+.message-content.receiver {
     justify-content: flex-start;
 }
 
@@ -108,10 +154,79 @@ const props = defineProps({
     user-select: none;
 }
 
+.bubble .image {
+    margin: 8px 0 0;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.bubble .loading {
+    align-items: center;
+    display: flex;
+    height: 18px;
+    margin-top: 6px;
+}
+
+.bubble .loading .dot {
+    animation: loadingAnimation 1.6s infinite ease-in-out;
+    background-color: #6CAD96;
+    border-radius: 50%;
+    height: 12px;
+    width: 12px;
+    margin-right: 6px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.bubble .loading .dot:nth-child(1) {
+    animation-delay: 200ms;
+}
+
+.bubble .loading .dot:nth-child(2) {
+    animation-delay: 300ms;
+}
+
+.bubble .loading .dot:nth-child(3) {
+    animation-delay: 400ms;
+}
+
+.bubble .loading .dot:last-child {
+    margin-right: 0;
+}
+
+@keyframes loadingAnimation {
+    0% {
+        transform: translateY(0px);
+        background-color: #6CAD96;
+    }
+
+    28% {
+        transform: translateY(-7px);
+        background-color: #9ECAB9;
+    }
+
+    44% {
+        transform: translateY(0px);
+        background-color: #B5D9CB;
+    }
+}
+
 @media screen and (min-width: 600px) {
     .bubble {
         max-width: 90%;
     }
+}
+
+.functionButtons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding-top: 8px;
+    margin-bottom: 4px;
+    justify-content: flex-end;
 }
 
 .sender>.bubble {
