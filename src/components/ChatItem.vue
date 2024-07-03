@@ -25,7 +25,7 @@ const typeWriterEffect = () => {
             if (index < textLength) {
                 animatedText.value += text[index];
                 index++;
-                setTimeout(addNextChar, Math.random() * 60 + 60)
+                setTimeout(addNextChar, Math.random() * 10 + 20)
             }
             else {
                 isAnimationPlaying.value = false;

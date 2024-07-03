@@ -125,6 +125,7 @@ const testMessage = (sender: 'user' | 'bot', type: 'text' | 'image', content = "
       <button @click="testMessage('bot', 'image', 'https://picsum.photos/seed/picsum/2000')">机器人图片</button>
       <button @click="testMessage('bot', 'text', longText, false, true)">机器人长文字</button>
       <button @click="testMessage('bot', 'text', '', true)">机器人加载</button>
+      <button @click="chatWrapRef.containerScrollToBottom(true)">滚动到底</button>
     </div>
     <FloatingMenu></FloatingMenu>
     <div class="main-container">

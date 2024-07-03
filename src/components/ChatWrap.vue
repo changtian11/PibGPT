@@ -1,5 +1,5 @@
 <template>
-    <div class="chat-container" id="chat-container" :class="{ collapse: collapse }">
+    <div class="chat-container" id="chat-container" :class="{ collapse: collapse }" ref="chatContainerRef">
         <ChatItem v-for="message in chatMessages" :message="message" :user-pfp-url="userPfpUrl" :key="message.id"
             @animation-playing="handleAnimation">
         </ChatItem>
@@ -7,7 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import type { Ref } from 'vue';
 import { ChatMessage } from '../types/types';
 import ChatItem from './ChatItem.vue';
 
@@ -21,14 +22,22 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     userPfpUrl: "https://picsum.photos/seed/picsum/200"
 });
-
 const emit = defineEmits(['update-messages', 'animation-playing'])
 
 const chatMessages = ref<ChatMessage[]>(props.initialMessage);
+const chatContainerRef = ref() as Ref<HTMLElement>;
+// const isAnimationPlaying = ref(false);
+
+const scrollToBottom = (smooth: boolean | any = false) => {
+    if (chatContainerRef.value) {
+        chatContainerRef.value.scrollTo({ top: chatContainerRef.value.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+    }
+}
 
 const addMessage = (message: ChatMessage) => {
     chatMessages.value.push(message);
     emit('update-messages', chatMessages.value)
+    nextTick(scrollToBottom);
 }
 
 const updateMessage = (id: number, updateMessage: Partial<ChatMessage>) => {
@@ -37,15 +46,12 @@ const updateMessage = (id: number, updateMessage: Partial<ChatMessage>) => {
         Object.assign(message, updateMessage);
         emit('update-messages', chatMessages.value);
     }
+    nextTick(scrollToBottom);
 }
 
 const handleAnimation = (state: boolean) => {
     emit('animation-playing', state);
 }
-
-// const scrollToBottom = () => {
-//     // TODO
-// }
 
 watch(
     () => props.initialMessage,
@@ -54,7 +60,28 @@ watch(
     }
 )
 
-defineExpose({ addMessage, updateMessage });
+// watch(isAnimationPlaying, (newVal) => {
+//     if (newVal) {
+//         while (isAnimationPlaying.value) {
+//             containerScrollToBottom();
+//         }
+//     }
+// })
+
+onMounted(() => {
+    scrollToBottom();
+
+    if (chatContainerRef.value) {
+        const observer = new MutationObserver(scrollToBottom);
+        observer.observe(chatContainerRef.value, { childList: true, subtree: true })
+
+        onUnmounted(() => {
+            observer.disconnect();
+        })
+    }
+})
+
+defineExpose({ addMessage, updateMessage, containerScrollToBottom: scrollToBottom });
 </script>
 
 <style scope>
