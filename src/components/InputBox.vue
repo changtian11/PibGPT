@@ -3,17 +3,17 @@ import { ref } from 'vue';
 import { NButton, NTooltip, NIcon } from 'naive-ui';
 import { SendFilled, DocumentAdd } from '@vicons/carbon';
 
-const inputBoxString = ref("");
+const userInput = ref("");
 
 const emit = defineEmits(
     ['submit']
 )
 
 const submitText = () => {
-    if (inputBoxString.value.length > 0) {
-        emit('submit', inputBoxString.value)
+    if (userInput.value.length > 0) {
+        emit('submit', userInput.value.trim())
     }
-    inputBoxString.value = "";
+    userInput.value = "";
 }
 
 </script>
@@ -22,7 +22,7 @@ const submitText = () => {
     <div class="input-container box_shadow_level_one hoverable">
         <div class="input-inner">
             <div class="input-wrap">
-                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="inputBoxString"
+                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="userInput"
                     @keyup.enter="submitText()"></input>
             </div>
             <div class="side-buttons">
