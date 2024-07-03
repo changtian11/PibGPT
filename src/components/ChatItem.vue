@@ -46,6 +46,8 @@ watch(isAnimationPlaying, (newVal, oldVal) => {
 
 watch(() => props.message.isAnimated, (isAnimated) => {
     if (isAnimated) typeWriterEffect();
+}, {
+    immediate: true
 })
 
 </script>

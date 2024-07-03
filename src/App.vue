@@ -109,7 +109,7 @@ const testMessage = (sender: 'user' | 'bot', type: 'text' | 'image', content = "
     id: Date.now(),
     sender, type, content, isLoading, isAnimated
   }
-  console.log(msg);
+  isChatWrapCollapse.value = false;
   chatWrapRef.value.addMessage(msg);
 }
 
