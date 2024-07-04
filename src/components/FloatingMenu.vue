@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { NButton, NTooltip, NIcon, NDivider } from 'naive-ui';
-import { DataBackup } from '@vicons/carbon';
+import { NButton, NTooltip, NIcon } from 'naive-ui';
+import { DataBackup, DownToBottom } from '@vicons/carbon';
+
+const emit = defineEmits(['scroll-to-bottom']);
+
+const scrollToBottom = () => {
+    emit('scroll-to-bottom');
+}
 
 </script>
 
@@ -8,12 +14,12 @@ import { DataBackup } from '@vicons/carbon';
     <div class="menu-wrap box_shadow_level_one hoverable">
         <div class="menu-inner">
             <img id="logo" class="box_shadow_level_one" src="../assets/Pib.png" alt="Pib Logo">
-            <NDivider></NDivider>
+            <div class="divider"></div>
             <NTooltip placement="left" trigger="hover">
                 <template #trigger>
                     <NButton quaternary :bordered="false" size="large">
                         <template #icon>
-                            <NIcon :size="28">
+                            <NIcon :size="24">
                                 <DataBackup />
                             </NIcon>
                         </template>
@@ -21,7 +27,19 @@ import { DataBackup } from '@vicons/carbon';
                 </template>
                 历史对话
             </NTooltip>
-            <NDivider></NDivider>
+            <NTooltip placement="left" trigger="hover">
+                <template #trigger>
+                    <NButton quaternary :bordered="false" size="large" @click="scrollToBottom">
+                        <template #icon>
+                            <NIcon :size="24">
+                                <DownToBottom />
+                            </NIcon>
+                        </template>
+                    </NButton>
+                </template>
+                滚动到底
+            </NTooltip>
+            <div class="divider"></div>
             <div class="menu-item">
                 <a>登录/注册</a>
             </div>
@@ -30,7 +48,6 @@ import { DataBackup } from '@vicons/carbon';
 </template>
 
 <style scope>
-
 .menu-wrap {
     width: 60px;
     min-height: 200px;
@@ -59,6 +76,14 @@ import { DataBackup } from '@vicons/carbon';
 
 .menu-item {
     font-size: 12px;
+}
+
+.divider {
+    width: 36px;
+    height: 2px;
+    border-top: 1px solid #E5E5E5;
+    border-radius: 8px;
+    margin: 12px 0;
 }
 
 #logo {

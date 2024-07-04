@@ -70,7 +70,6 @@ watch(
 
 onMounted(() => {
     scrollToBottom();
-
     if (chatContainerRef.value) {
         const observer = new MutationObserver(scrollToBottom);
         observer.observe(chatContainerRef.value, { childList: true, subtree: true })
@@ -81,7 +80,7 @@ onMounted(() => {
     }
 })
 
-defineExpose({ addMessage, updateMessage, containerScrollToBottom: scrollToBottom });
+defineExpose({ addMessage, updateMessage, scrollToBottom });
 </script>
 
 <style scope>
