@@ -74,14 +74,8 @@ button:focus-visible {
   height: 100%;
   overflow: hidden;
   margin: 0;
-  padding: 0.5rem 0.4rem;
+  padding: 0;
   text-align: center;
-}
-
-@media screen and (min-width: 600px) {
-  #app {
-    padding: 1rem 2rem;
-  }
 }
 
 * {

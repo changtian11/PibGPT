@@ -1,54 +1,54 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { NButton, NTooltip, NIcon } from 'naive-ui';
-import { Copy, Share } from '@vicons/carbon';
-import type { ChatMessage } from '../types/types';
+    import { ref, watch } from 'vue';
+    import { NButton, NTooltip, NIcon } from 'naive-ui';
+    import { Copy, Share } from '@vicons/carbon';
+    import type { ChatMessage } from '../types/types';
 
-interface Props {
-    message: ChatMessage,
-    userPfpUrl: string;
-}
+    interface Props {
+        message: ChatMessage,
+        userPfpUrl: string;
+    }
 
-const props = defineProps<Props>();
-const emit = defineEmits(['animation-playing']);
-const animatedText = ref("");
-const isAnimationPlaying = ref(false);
+    const props = defineProps<Props>();
+    const emit = defineEmits(['animation-playing']);
+    const animatedText = ref("");
+    const isAnimationPlaying = ref(false);
 
-const typeWriterEffect = () => {
-    if (!props.message.isAnimated) return;
-    else {
-        isAnimationPlaying.value = true;
-        const text = props.message.content;
-        const textLength = props.message.content.length;
-        let index = 0;
-        function addNextChar() {
-            if (index < textLength) {
-                animatedText.value += text[index];
-                index++;
-                setTimeout(addNextChar, Math.random() * 10 + 20)
+    const typeWriterEffect = () => {
+        if (!props.message.isAnimated) return;
+        else {
+            isAnimationPlaying.value = true;
+            const text = props.message.content;
+            const textLength = props.message.content.length;
+            let index = 0;
+            function addNextChar() {
+                if (index < textLength) {
+                    animatedText.value += text[index];
+                    index++;
+                    setTimeout(addNextChar, Math.random() * 10 + 20)
+                }
+                else {
+                    isAnimationPlaying.value = false;
+                }
             }
-            else {
-                isAnimationPlaying.value = false;
-            }
+            addNextChar();
         }
-        addNextChar();
     }
-}
 
-watch(isAnimationPlaying, (newVal, oldVal) => {
-    if (newVal && !oldVal) {
-        emit('animation-playing', true);
-    }
-    else {
-        emit('animation-playing', false);
-    }
-})
+    watch(isAnimationPlaying, (newVal, oldVal) => {
+        if (newVal && !oldVal) {
+            emit('animation-playing', true);
+        }
+        else {
+            emit('animation-playing', false);
+        }
+    })
 
-watch(() => props.message.isAnimated, (isAnimated) => {
-    if (isAnimated) typeWriterEffect();
-}, {
-    immediate: true
-})
+    watch(() => props.message.isAnimated, (isAnimated) => {
+        if (isAnimated) typeWriterEffect();
+    }, {
+        immediate: true
+    })
 
 </script>
 
@@ -116,191 +116,191 @@ watch(() => props.message.isAnimated, (isAnimated) => {
 </template>
 
 <style>
-.chat-item {
-    margin: 1rem 0 0;
-    color: var(--item-bg);
-}
+    .chat-item {
+        margin: 1rem 0 0;
+        color: var(--item-bg);
+    }
 </style>
 
 <style scope>
-.message {
-    display: flex;
-    width: 100%;
-    gap: 28px;
-}
-
-.pfp-placeholder,
-.pfp {
-    min-width: 56px;
-}
-
-.pfp-placeholder {
-    background-color: transparent;
-}
-
-.pfp {
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.pfp>img {
-    height: 56px;
-    width: 56px;
-    border-radius: 50%;
-    border: 1px solid #AAA;
-    margin-bottom: 8px;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-.message-content {
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: row;
-    flex-grow: 1;
-}
-
-.message-content.sender {
-    justify-content: flex-end;
-}
-
-.message-content.receiver {
-    justify-content: flex-start;
-}
-
-.bubble {
-    word-wrap: normal;
-    margin-bottom: 12px;
-    font-size: 16px;
-    line-height: 28px;
-    position: relative;
-    padding: 10px 20px;
-    border-radius: 25px;
-    text-align: left;
-    white-space: pre-line;
-}
-
-.bubble:before,
-.bubble:after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    height: 25px;
-    user-select: none;
-}
-
-.bubble .image {
-    margin: 8px 0 0;
-    width: 100%;
-    height: auto;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-.bubble .loading {
-    align-items: center;
-    display: flex;
-    height: 18px;
-    margin-top: 6px;
-}
-
-.bubble .loading .dot {
-    animation: loadingAnimation 1.6s infinite ease-in-out;
-    background-color: #6CAD96;
-    border-radius: 50%;
-    height: 12px;
-    width: 12px;
-    margin-right: 6px;
-    vertical-align: middle;
-    display: inline-block;
-}
-
-.bubble .loading .dot:nth-child(1) {
-    animation-delay: 200ms;
-}
-
-.bubble .loading .dot:nth-child(2) {
-    animation-delay: 300ms;
-}
-
-.bubble .loading .dot:nth-child(3) {
-    animation-delay: 400ms;
-}
-
-.bubble .loading .dot:last-child {
-    margin-right: 0;
-}
-
-@keyframes loadingAnimation {
-    0% {
-        transform: translateY(0px);
-        background-color: #6CAD96;
+    .message {
+        display: flex;
+        width: 100%;
+        gap: 28px;
     }
 
-    28% {
-        transform: translateY(-7px);
-        background-color: #9ECAB9;
+    .pfp-placeholder,
+    .pfp {
+        min-width: 56px;
     }
 
-    44% {
-        transform: translateY(0px);
-        background-color: #B5D9CB;
+    .pfp-placeholder {
+        background-color: transparent;
     }
-}
 
-@media screen and (min-width: 600px) {
+    .pfp {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .pfp>img {
+        height: 56px;
+        width: 56px;
+        border-radius: 50%;
+        border: 1px solid #AAA;
+        margin-bottom: 8px;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+
+    .message-content {
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        flex-grow: 1;
+    }
+
+    .message-content.sender {
+        justify-content: flex-end;
+    }
+
+    .message-content.receiver {
+        justify-content: flex-start;
+    }
+
     .bubble {
-        max-width: 90%;
+        word-wrap: normal;
+        margin-bottom: 12px;
+        font-size: 16px;
+        line-height: 28px;
+        position: relative;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-align: left;
+        white-space: pre-line;
     }
-}
 
-.functionButtons {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 8px;
-    padding-top: 4px;
-    margin-bottom: 0;
-    justify-content: flex-end;
-}
+    .bubble:before,
+    .bubble:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        height: 25px;
+        user-select: none;
+    }
 
-.sender>.bubble {
-    color: var(--sender-text-color);
-    background-color: var(--sender-bg);
-}
+    .bubble .image {
+        margin: 8px 0 0;
+        width: 100%;
+        height: auto;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
 
-.sender>.bubble:before {
-    right: -7px;
-    width: 20px;
-    background-color: var(--sender-bg);
-    border-bottom-left-radius: 16px 14px;
-}
+    .bubble .loading {
+        align-items: center;
+        display: flex;
+        height: 18px;
+        margin-top: 6px;
+    }
 
-.sender>.bubble:after {
-    right: -26px;
-    width: 26px;
-    background-color: var(--page-bg);
-    border-bottom-left-radius: 10px;
-}
+    .bubble .loading .dot {
+        animation: loadingAnimation 1.6s infinite ease-in-out;
+        background-color: #6CAD96;
+        border-radius: 50%;
+        height: 12px;
+        width: 12px;
+        margin-right: 6px;
+        vertical-align: middle;
+        display: inline-block;
+    }
 
-.receiver>.bubble {
-    color: var(--receiver-text-color);
-    background-color: var(--receiver-bg);
-}
+    .bubble .loading .dot:nth-child(1) {
+        animation-delay: 200ms;
+    }
 
-.receiver>.bubble:before {
-    left: -7px;
-    width: 20px;
-    background-color: var(--receiver-bg);
-    border-bottom-right-radius: 16px 14px;
-}
+    .bubble .loading .dot:nth-child(2) {
+        animation-delay: 300ms;
+    }
 
-.receiver>.bubble:after {
-    left: -26px;
-    width: 26px;
-    background-color: var(--page-bg);
-    border-bottom-right-radius: 10px;
-}
+    .bubble .loading .dot:nth-child(3) {
+        animation-delay: 400ms;
+    }
+
+    .bubble .loading .dot:last-child {
+        margin-right: 0;
+    }
+
+    @keyframes loadingAnimation {
+        0% {
+            transform: translateY(0px);
+            background-color: #6CAD96;
+        }
+
+        28% {
+            transform: translateY(-7px);
+            background-color: #9ECAB9;
+        }
+
+        44% {
+            transform: translateY(0px);
+            background-color: #B5D9CB;
+        }
+    }
+
+    @media screen and (min-width: 600px) {
+        .bubble {
+            max-width: 90%;
+        }
+    }
+
+    .functionButtons {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding-top: 4px;
+        margin-bottom: 0;
+        justify-content: flex-end;
+    }
+
+    .sender>.bubble {
+        color: var(--sender-text-color);
+        background-color: var(--sender-bg);
+    }
+
+    .sender>.bubble:before {
+        right: -7px;
+        width: 20px;
+        background-color: var(--sender-bg);
+        border-bottom-left-radius: 16px 14px;
+    }
+
+    .sender>.bubble:after {
+        right: -26px;
+        width: 26px;
+        background-color: var(--page-bg);
+        border-bottom-left-radius: 10px;
+    }
+
+    .receiver>.bubble {
+        color: var(--receiver-text-color);
+        background-color: var(--receiver-bg);
+    }
+
+    .receiver>.bubble:before {
+        left: -7px;
+        width: 20px;
+        background-color: var(--receiver-bg);
+        border-bottom-right-radius: 16px 14px;
+    }
+
+    .receiver>.bubble:after {
+        left: -26px;
+        width: 26px;
+        background-color: var(--page-bg);
+        border-bottom-right-radius: 10px;
+    }
 </style>

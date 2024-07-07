@@ -9,13 +9,20 @@ export interface ChatMessage {
 
 export interface ChatRoom {
     id: number;
-    title: string;
+    chatTitle: string;
     history: ChatMessage[];
-    dateTime: string;
+    lastMsgTimestamp: string;
+}
+
+export interface User {
+    nickname: string;
+    username: string;
+    profilePhoto: string
 }
 
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
-    error?: string;
+    message?: string;
+    code?: number;
 }
