@@ -1,18 +1,13 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const fs = require('fs');
 const path = require('path');
-const multer = require('multer');
-const bcrypt = require('bcrypt');
+
 const jwt = require('jsonwebtoken');
-const { User, ChatRoom, BlacklistedToken } = require('../utils/db');
-const pfpUploadDir = path.join(__dirname, '../../uploads/profile_photos');
+const { User, ChatRoom, BlacklistedToken } = require('../utils/db');;
 
 
-if (!fs.existsSync(pfpUploadDir)) {
-    fs.mkdirSync(pfpUploadDir, { recursive: true });
-}
+[pfpUploadDir, chatUploadDir].forEach(dir => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+})
 
 const app = express();
 app.use(bodyParser.json());
@@ -20,87 +15,6 @@ app.use(cookieParser());
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Image uploads for profile photos
-const pfpStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, pfpUploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-// Image uploads for chat photos
-const chatStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, chatUploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const uploadPfp = multer({ storage: pfpStorage });
-const uploadChat = multer({ storage: chatStorage });
-
-// Register a new user
-app.post('/api/register', uploadPfp.single('profilePhoto'), async (req, res) => {
-    const { username, password, role } = req.body;
-
-    if (role === 'user' && !req.file) {
-        return res.json({
-            success: false,
-            message: 'No profile photo uploaded',
-            code: 401
-        })
-    }
-
-    const deleteUploadedPfp = (fileName) => {
-        if (fileName) {
-            fs.unlink(path.join(pfpUploadDir, fileName), err => {
-                if (err) {
-                    console.error(`Failed to delete profile photo ${fileName}: ${err.message}`);
-                }
-                else {
-                    console.log(`File "${fileName}" has been deleted.`)
-                }
-            })
-        }
-    }
-
-    const pfpFilename = req.file ? req.file.filename : '';
-
-    try {
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            deleteUploadedPfp(pfpFilename);
-            return res.json({
-                code: 400,
-                success: false,
-                message: 'User already exists'
-            });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, role, profilePhoto: pfpFilename });
-        await user.save();
-        return res.json({
-            success: true,
-            message: "User registered"
-        });
-    }
-    catch (error) {
-        res.json({
-            success: false,
-            message: `Failed to register user: ${error.messages}`,
-            code: 500
-        })
-        deleteUploadedPfp(pfpFilename);
-        console.error(error);
-    }
-
-});
 
 // Login a user
 app.post('/api/login', async (req, res) => {
@@ -128,7 +42,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Middleware to authenticate JWT, and check if token is blacklisted, and get user from token
 const authenticate = async (req, res, next) => {
     const token = req.cookies.token;
     if (!token) {
@@ -197,8 +110,19 @@ app.get('/api/logout', authenticate, async (req, res) => {
 
 // Get profile photo by filename
 app.get('/api/pfp/:pfpId', authenticate, async (req, res) => {
-    const { pfpId } = req.params
-    res.sendFile(path.join(pfpUploadDir, pfpId));
+    const { pfpId } = req.params;
+    const pfpUri = path.join(pfpUploadDir, pfpId);
+    if (fs.existsSync(pfpUri)) {
+        return res.sendFile(pfpUri);
+    }
+    else {
+        console.error(`Cannot find profile photo file: ${pfpId}`);
+        res.status(404).json({
+            success: false,
+            message: 'Image not found',
+            code: 404
+        });
+    }
 })
 
 
