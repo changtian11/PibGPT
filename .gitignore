@@ -13,7 +13,8 @@ dist
 dist-ssr
 *.local
 /server/public/*
-/server/uploads/*
+/uploads/**/*
+/server/uploads/**/*
 
 # Editor directories and files
 .vscode/*
@@ -27,3 +28,4 @@ dist-ssr
 *.sln
 *.sw?
 *.code-workspace
+.VSCodeCounter
