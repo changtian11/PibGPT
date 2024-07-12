@@ -1,28 +1,28 @@
 <template>
-    <div class="modal">
-        <div class="login-modal box_shadow_level_two">
+    <div class="modal-component">
+        <div class="modal login-modal box_shadow_level_two">
             <div class="title">
                 <span>登录/注册</span>
             </div>
-            <div class="input-container">
-                <div class="input-item">
+            <div class="form-container">
+                <div class="form-item">
                     <span class="label">手机号</span>
                     <NInputGroup>
                         <NSelect :style="{ width: '50%' }" :options="callingCodes" placeholder="国家/地区"
                             default-value="+86" filterable size="large" :disabled="isLoading"></NSelect>
                         <NInput placeholder="手机号" clearable :maxlength="11" size="large"
-                            v-model:value="userLogin.userPhoneNumber" :allow-input="onlyAllowNumber"
+                            v-model:value="loginForm.username" :allow-input="onlyAllowNumber"
                             :disabled="isLoading">
                         </NInput>
                     </NInputGroup>
                 </div>
-                <div class="input-item">
+                <div class="form-item">
                     <span class="label">验证码</span>
                     <NInput size="large" placeholder="验证码" :maxlength="6" clearable
-                        v-model:value="userLogin.userPassword" :allow-input="onlyAllowNumber" :disabled="isLoading">
+                        v-model:value="loginForm.password" :allow-input="onlyAllowNumber" :disabled="isLoading">
                         <template #suffix>
                             <NButton quaternary type="primary" @click="mockSmsOtp"
-                                :disabled="smsOtpBtnDisable || isLoading || userLogin.userPhoneNumber.length !== 11">
+                                :disabled="smsOtpBtnDisable || isLoading || loginForm.username.length !== 11">
                                 获取验证码{{
                                     smsOtpBtnCountdown > 0 ? `(${smsOtpBtnCountdown})` : "" }}</NButton>
                         </template>
@@ -36,7 +36,7 @@
                 <NTooltip trigger="hover" placement="top" :delay="0" to=".login-modal">
                     <template #trigger>
                         <NButton type="primary" size="large" @click="handleLogin" :loading="isLoading"
-                            :disabled="userLogin.userPhoneNumber.length !== 11 || userLogin.userPassword.length !== 6">
+                            :disabled="loginForm.username.length !== 11 || loginForm.password.length !== 6">
                             登录/注册</NButton>
                     </template>
                     未注册的手机号将会自动注册
@@ -52,15 +52,15 @@
     import { ref, reactive, onMounted, onUnmounted, h } from 'vue';
     import { NInputGroup, NInput, NSelect, NButton, NTooltip, NAlert, useMessage } from 'naive-ui';
     import type { MessageRenderMessage } from 'naive-ui';
-    import type { ApiResponse, User } from '../types/types';
+    import type { ApiResponse, User, Login } from '../types/types';
     import axios from 'axios';
     const emit = defineEmits(['cancel', 'login-success']);
     const smsOtpBtnDisable = ref(false);
     const smsOtpBtnCountdown = ref(0);
     const isLoading = ref(false);
-    let userLogin = reactive({
-        userPhoneNumber: '',
-        userPassword: ''
+    const loginForm = reactive<Login>({
+        username: '',
+        password: ''
     })
     let singleTimer: undefined | number;
 
@@ -111,7 +111,7 @@
     }
 
     const mockSmsOtp = () => {
-        if (!userLogin.userPhoneNumber || userLogin.userPhoneNumber.length !== 11) {
+        if (!loginForm.username || loginForm.username.length !== 11) {
             return message.error("手机号码有误");
         }
         smsOtpBtnDisable.value = true;
@@ -139,7 +139,7 @@
     }
 
     const handleLogin = async () => {
-        if (userLogin.userPhoneNumber.length !== 11 || userLogin.userPassword.length !== 6) {
+        if (loginForm.username.length !== 11 || loginForm.password.length !== 6) {
             message.error("手机号或验证码有误");
             return;
         }
@@ -147,8 +147,8 @@
             isLoading.value = true;
             try {
                 const res = await axios.post<ApiResponse<User>>('/api/login', {
-                    username: userLogin.userPhoneNumber,
-                    password: userLogin.userPassword
+                    username: loginForm.username,
+                    password: loginForm.password
                 })
                 console.log(res);
                 if (res.data.success) {
@@ -336,88 +336,5 @@
 </script>
 
 <style scope>
-    .modal {
-        position: absolute;
-        display: flex;
-        height: 100vh;
-        width: 100vw;
-        background-color: transparent;
-        z-index: 198;
-        flex-flow: column;
-        justify-content: center;
-        align-items: center;
-        background-color: transparent;
-    }
-
-    .dim-bg {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        z-index: 199;
-        left: 0;
-        top: 0;
-        background-color: rgb(0, 0, 0);
-        /* fallback */
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    .login-modal {
-        position: relative;
-        z-index: 200;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        width: 90%;
-        padding: 2rem 1rem;
-        background-color: var(--item-bg);
-        border-radius: 12px;
-    }
-
-    @media screen and (min-width:600px) {
-
-        .login-modal {
-            width: 60%;
-            min-width: 500px;
-            max-height: 900px;
-        }
-    }
-
-    @media screen and (min-width: 1200px) {
-        .login-modal {
-            width: 60%;
-            max-width: 500px;
-        }
-
-    }
-
-    .title {
-        font-size: 28px;
-        text-align: left;
-        user-select: none;
-        padding: 0 12px;
-        font-weight: bold;
-    }
-
-    .input-container {
-        text-align: left;
-    }
-
-    .input-item {
-        margin-bottom: 24px;
-    }
-
-    .input-item>span {
-        user-select: none;
-    }
-
-    .bottom-buttons {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin: 1rem 0;
-        align-items: center;
-        justify-content: center;
-    }
+    @import "../stylesheets/modal.css";
 </style>
