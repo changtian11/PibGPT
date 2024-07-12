@@ -3,12 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { User, ChatRoom } = require('./db');
-const chatUploadDir = path.join(__dirname, '../../uploads/chat_photos');
 const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!fs.existsSync(chatUploadDir)) {
-    fs.mkdirSync(chatUploadDir, { recursive: true });
-}
 
 function setupWebSocket(server) {
     const wss = new WebSocket.Server({ server, path: '/ws' });
@@ -68,9 +63,10 @@ function setupWebSocket(server) {
     });
 }
 
-module.exports = setupWebSocket;
 
 function getRoomIdFromRequest(req) {
     // Logic to extract roomId from the request, e.g., from URL query params
     return new URL(req.url, `http://${req.headers.host}`).searchParams.get('roomId');
 }
+
+module.exports = { setupWebSocket };
