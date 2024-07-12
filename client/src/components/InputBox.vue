@@ -64,7 +64,6 @@
 <style scope>
     .input-container {
         display: block;
-        border: 1px solid var(--border-color);
         border-radius: 12px;
         background-color: var(--item-bg);
         padding: 12px 12px 12px 24px;
