@@ -24,7 +24,9 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-
+        main: path.resolve(__dirname, 'index.html'),
+        register: path.resolve(__dirname, 'register.html'),
+        bot: path.resolve(__dirname, 'bot.html')
       }
     }
   }
