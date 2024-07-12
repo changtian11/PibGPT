@@ -134,7 +134,7 @@
             }
             else {
                 message.error('退出登录失败', {
-                    
+
                 })
             }
         }
@@ -214,7 +214,7 @@
     .divider {
         width: 36px;
         height: 2px;
-        border-top: 1px solid #E5E5E5;
+        border-top: 1px solid var(--divider);
         border-radius: 8px;
         margin: 12px 0;
     }
