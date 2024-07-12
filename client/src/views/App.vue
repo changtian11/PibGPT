@@ -33,7 +33,7 @@
   // Validate the login and fetch user data
   const validateLogin = async () => {
     try {
-      const res = await axios.get<ApiResponse<User>>('/api/validate-login', {
+      const res = await axios.get<ApiResponse<User>>('/api/auth', {
         withCredentials: true
       });
       if (res.data.success) {
@@ -45,7 +45,8 @@
         loginState.isLoggedin = false;
         loginState.user = null;
         if (Number(res.data.code) === 401) {
-          console.log('Not logged in.')
+          // console.log(res.data)
+          return;
         }
         else {
           console.error(`Error[${res.data.code}]: ${res.data.message}`)
@@ -57,6 +58,7 @@
       console.error(error)
     }
   }
+
   const loginSuccessHandler = () => {
     validateLogin();
     setTimeout(() => showLoginModal.value = false, 200);
@@ -211,29 +213,7 @@
   </NMessageProvider>
 </template>
 
-<style>
-  .page-container {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--page-bg);
-    z-index: 0;
-  }
-
-  .v-enter-active,
-  .v-leave-active {
-    transition: opacity 0.3s ease-out;
-  }
-
-  .v-enter-from,
-  .v-leave-to {
-    opacity: 0;
-  }
-
+<style scoped>
   .main-container {
     min-width: 320px;
     width: 95%;
