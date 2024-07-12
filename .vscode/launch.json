@@ -2,21 +2,47 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Dev Server",
             "type": "node",
             "request": "launch",
-            "name": "Launch Server",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/server/app.js",
+            "program": "${workspaceFolder}/server/server.js",
             "runtimeExecutable": "${workspaceFolder}/server/node_modules/nodemon/bin/nodemon.js",
             "restart": true,
-            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}/server",
+            "envFile": "${workspaceFolder}/server/.env",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+        },
+        {
+            "name": "Dev Client",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/node_modules/vite/bin/vite.js",
+            "cwd": "${workspaceFolder}/client",
+            "runtimeExecutable": "node",
+            "envFile": "${workspaceFolder}/client/.env",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "pattern": "http://localhost:([0-9]+)",
+                "uriFormat": "http://localhost:%s",
+                "action": "openExternally"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Dev All",
+            "configurations": [
+                "Dev Server",
+                "Dev Client"
+            ]
         }
     ]
 }
