@@ -1,0 +1,84 @@
+.modal-component {
+    position: absolute;
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: transparent;
+    z-index: 198;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+}
+
+.modal-component .dim-bg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 199;
+    left: 0;
+    top: 0;
+    background-color: rgb(0, 0, 0);
+    /* fallback */
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-component .modal {
+    position: relative;
+    z-index: 200;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 90%;
+    padding: 2rem 1rem;
+    background-color: var(--item-bg);
+    border-radius: 12px;
+}
+
+@media screen and (min-width: 600px) {
+    .modal-component .modal {
+        width: 60%;
+        min-width: 500px;
+        max-height: 900px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .modal-component .modal {
+        width: 60%;
+        max-width: 500px;
+    }
+}
+
+.modal-component .title {
+    font-size: 28px;
+    text-align: left;
+    user-select: none;
+    padding: 0 12px;
+    font-weight: bold;
+}
+
+.modal-component .form-container {
+    text-align: left;
+    display: block;
+    padding: 12px 12px 12px 24px;
+}
+
+.modal-component .form-item {
+    margin-bottom: 24px;
+}
+
+.modal-component .form-item > span {
+    user-select: none;
+}
+
+.modal-component .bottom-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 1rem 0;
+    align-items: center;
+    justify-content: center;
+}

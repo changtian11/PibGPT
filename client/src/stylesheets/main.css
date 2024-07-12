@@ -94,3 +94,25 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+.page-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--page-bg);
+  z-index: 0;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.3s ease-out;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
