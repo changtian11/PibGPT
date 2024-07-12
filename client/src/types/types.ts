@@ -17,7 +17,13 @@ export interface ChatRoom {
 export interface User {
     nickname: string;
     username: string;
-    profilePhoto: string
+    profilePhoto: string;
+    role: string
+}
+
+export interface Login {
+    username: string;
+    password: string;
 }
 
 export interface ApiResponse<T> {
