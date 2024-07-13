@@ -1,10 +1,9 @@
-const path = require('path');
 const multer = require('multer');
 const { fileSizeLimits, tempDirPath, getFileType, isAllowedFileExts } = require('../utils/fileUtil');
 
 const uploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(tempDirPath))
+        cb(null, tempDirPath)
     },
     filename: (req, file, cb) => {
         const desiredFileName = Date.now() + '-' + file.originalname;
@@ -30,8 +29,7 @@ const upload = multer({
     },
     fileFilter: (req, file, cb) => {
         const filePurpose = req.body.filePurpose === 'att' ? att : undefined;
-        const fileExtension = path.extname(file.originalname).toLowerCase().substring(1);
-        if (isAllowedFileType(fileExtension, filePurpose)) {
+        if (isAllowedFileExts(file.originalname, filePurpose)) {
             cb(null, true);
         }
         else {
