@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
+const BlacklistedToken = require('../models/blacklistedTokenModel');
 const { createNewFile } = require('../controllers/fileController');
 
 const registerUser = async (req, res) => {
@@ -99,10 +100,33 @@ const loginUser = async (req, res) => {
 }
 
 const authenticateUser = (req, res) => {
+    const { username, nickname, role, pfpId } = req.user;
     return res.json({
         success: true,
-        data: req.user
+        data: {
+            username, nickname, role, pfpId
+        }
     });
+}
+
+const logoutUser = async (req, res) => {
+    try {
+        const token = req.cookies.token
+        const blacklistedToken = new BlacklistedToken({ token, expiryDate: new Date((jwt.decode(token).iat + 14 * 24 * 3600) * 1000) });
+        await blacklistedToken.save();
+        res.clearCookie('token').json({
+            success: true,
+            message: 'Logged out'
+        })
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Logout failed',
+            code: 500
+        })
+    }
 }
 
 const getUserProfile = async (req, res) => {
@@ -195,4 +219,12 @@ const updateUserProfile = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, getUserProfile, updateUserPfp, updateUserProfile, authenticateUser };
+module.exports = {
+    registerUser,
+    loginUser,
+    getUserProfile,
+    updateUserPfp,
+    updateUserProfile,
+    authenticateUser,
+    logoutUser
+};
