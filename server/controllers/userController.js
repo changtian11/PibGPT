@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
         if (!filePurpose || filePurpose !== 'pfp') {
             return res.json({
                 success: false,
-                message: 'Ivalid file purpose'
+                message: 'Invalid file purpose'
             })
         }
 
@@ -44,9 +44,15 @@ const registerUser = async (req, res) => {
             username,
             nickname,
             password: hashedPassword,
-            profilePhoto
+            profilePhoto,
+            role
         })
         await newUser.save();
+        res.json({
+            code: 201,
+            success: true,
+            message: "Account created!"
+        })
     }
 
     catch (error) {
