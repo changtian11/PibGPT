@@ -69,11 +69,15 @@
     margin-bottom: 24px;
 }
 
-.modal-component .form-item > span {
+.modal-component .form-item > .label {
+    display: inline-block;
     user-select: none;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #5E5E5E;
 }
 
-.modal-component .bottom-buttons {
+.modal-component .form-actions {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
