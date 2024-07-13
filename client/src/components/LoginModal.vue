@@ -6,20 +6,19 @@
             </div>
             <div class="form-container">
                 <div class="form-item">
-                    <span class="label">手机号</span>
+                    <p class="label">手机号</p>
                     <NInputGroup>
                         <NSelect :style="{ width: '50%' }" :options="callingCodes" placeholder="国家/地区"
                             default-value="+86" filterable size="large" :disabled="isLoading"></NSelect>
                         <NInput placeholder="手机号" clearable :maxlength="11" size="large"
-                            v-model:value="loginForm.username" :allow-input="onlyAllowNumber"
-                            :disabled="isLoading">
+                            v-model:value="loginForm.username" :allow-input="onlyAllowNumber" :disabled="isLoading">
                         </NInput>
                     </NInputGroup>
                 </div>
                 <div class="form-item">
-                    <span class="label">验证码</span>
-                    <NInput size="large" placeholder="验证码" :maxlength="6" clearable
-                        v-model:value="loginForm.password" :allow-input="onlyAllowNumber" :disabled="isLoading">
+                    <p class="label">验证码</p>
+                    <NInput size="large" placeholder="验证码" :maxlength="6" clearable v-model:value="loginForm.password"
+                        :allow-input="onlyAllowNumber" :disabled="isLoading">
                         <template #suffix>
                             <NButton quaternary type="primary" @click="mockSmsOtp"
                                 :disabled="smsOtpBtnDisable || isLoading || loginForm.username.length !== 11">
@@ -29,7 +28,7 @@
                     </NInput>
                 </div>
             </div>
-            <div class="bottom-buttons">
+            <div class="form-actions">
                 <NButton size="large" @click="rejectEmailLogin" :loading="isLoading">
                     使用邮箱登录
                 </NButton>
@@ -335,6 +334,6 @@
 
 </script>
 
-<style scope>
+<style>
     @import "../stylesheets/modal.css";
 </style>
