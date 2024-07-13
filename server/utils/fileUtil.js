@@ -45,7 +45,8 @@ const getFileType = (filename) => {
     return 'other';
 }
 
-const isAllowedFileExts = (fileExtension, filePurpose = 'att') => {
+const isAllowedFileExts = (filename, filePurpose = 'att') => {
+    const fileExtension = path.extname(filename).toLowerCase().substring(1);
     if (filePurpose === 'att') {
         return Object.values(allowedAttachmentExts).flat().includes(fileExtension);
     }
@@ -87,12 +88,13 @@ const moveFile = async (filename, fileType) => {
     const finalPath = path.join(uploadDirPath, fileType, filename);
 
     try {
-        await fs.promises.mkdir(path.join(uploadDirPath, fileType));
+        const finalFolder = path.join(uploadDirPath, fileType)
+        if (!fs.existsSync(finalFolder)) await fs.promises.mkdir();
         await fs.promises.rename(tempPath, finalPath);
     }
 
     catch (err) {
-        console.error(`Error moving file: ${err}`);
+        console.error(`Error moving file ${filename}: ${err}`);
         throw err;
     }
 }
