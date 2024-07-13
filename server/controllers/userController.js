@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
 const { createNewFile } = require('../controllers/fileController');
@@ -68,6 +70,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
+    console.log(password);
     const user = await User.findOne({ username });
     console.log(user);
     try {
