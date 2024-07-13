@@ -101,7 +101,10 @@ const loginUser = async (req, res) => {
 }
 
 const authenticateUser = (req, res) => {
-    return res.json(req.user);
+    return res.json({
+        success: true,
+        data: req.user
+    });
 }
 
 const getUserProfile = async (req, res) => {
