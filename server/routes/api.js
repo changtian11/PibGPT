@@ -7,8 +7,8 @@ const uploadMiddleware = require('../middleware/uploadMiddleware');
 const authMiddleware = require('../middleware/authMiddleware');
 
 
-// Regsiter and login
-router.post('/regsiter', uploadMiddleware, registerUser);
+// User register and login
+router.post('/register', uploadMiddleware, registerUser);
 router.post('/login', loginUser);
 
 // Privileged actions 
