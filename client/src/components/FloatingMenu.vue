@@ -46,7 +46,7 @@
                     <NDropdown :options="dropdownOptions" placement="left" size="large" :keyboard="false"
                         trigger="click" style="margin-right: 24px; border-radius: 12px" :arrow-point-to-center="true"
                         :show-arrow="true" @select="handleSelect">
-                        <img id="userPfp" :src="`/api/pfp/${user?.profilePhoto}`" alt="Pib Logo">
+                        <img id="userPfp" :src="`/api/getPfpById/${user?.pfpId}`" alt="Pib Logo">
                     </NDropdown>
                 </div>
             </template>
@@ -86,7 +86,7 @@
         },
             [h('img', {
                 style: "width: 40x; height: 40px; border-radius: 50%; padding-left: 2px; object-fit: cover; -webkit-user-drag: none",
-                src: `/api/pfp/${props.user?.profilePhoto}`
+                src: `/api/getPfpById/${props.user?.pfpId}`
             }),
             h('div', {
                 style: 'text-align: left; display: flex; flex-direction: column; flex-wrap: nowrap;padding-right: 4px'

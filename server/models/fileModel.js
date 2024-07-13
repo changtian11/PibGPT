@@ -12,7 +12,7 @@ const fileSchema = new mongoose.Schema({
     },
 }, {
     methods: {
-        getFilePath() {path.join(uploadDirPath, this.fileType, this.filename)},
+        getFilePath() { return path.resolve(uploadDirPath, this.fileType, this.filename) },
     }
 })
 

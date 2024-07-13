@@ -45,7 +45,7 @@
         loginState.isLoggedin = false;
         loginState.user = null;
         if (Number(res.data.code) === 401) {
-          // console.log(res.data)
+          // suppress first time loading error
           return;
         }
         else {
@@ -199,7 +199,7 @@
         :is-logged-in="loginState.isLoggedin" :user="loginState.user" @logout-success="validateLogin"> </FloatingMenu>
       <div class="main-container" :class="{ collapse: isChatWrapCollapse }">
         <TitleLogo :chat-title="chatTitle" :is-collapse="isChatWrapCollapse"></TitleLogo>
-        <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="loginState.user?.profilePhoto"
+        <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="loginState.user?.pfpId"
           :collapse="isChatWrapCollapse" @animation-playing="(state: boolean) => { isMsgAnimationPlaying = state }">
         </ChatWrap>
         <InputBox @submit="handleSubmit" :is-awaiting-response="isAwaitingResponse"

@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { registerUser, loginUser, getUserProfile, getUserPfp, updateUserPfp, authenticateUser } = require('../controllers/userController');
+const { getPfpById } = require('../controllers/fileController');
+const { registerUser, loginUser, getUserProfile, updateUserPfp, authenticateUser } = require('../controllers/userController');
 
 const uploadMiddleware = require('../middleware/uploadMiddleware');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -11,10 +12,13 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/register', uploadMiddleware, registerUser);
 router.post('/login', loginUser);
 
+// Get resources
+router.get('/getPfpById/:pfpId', getPfpById);
+
+
 // Privileged actions 
 router.get('/auth', authMiddleware, authenticateUser)
 router.post('/updateUserPfp', authMiddleware, updateUserPfp);
 router.get('/getUserProfile', authMiddleware, getUserProfile);
-router.get('/getUserPfp', authMiddleware, getUserPfp);
 
 module.exports = router;

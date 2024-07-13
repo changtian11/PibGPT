@@ -49,7 +49,6 @@ const authMiddleware = async (req, res, next) => {
                 code: 401
             })
         }
-        console.log(user);
         req.user = {
             username: user.username,
             nickname: user.nickname,

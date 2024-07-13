@@ -48,13 +48,35 @@ const removeExistingFile = async (fileObj) => {
     });
 }
 
-const getPfpPathById = async (pfpId) => {
-    
+const getPfpById = async (req, res) => {
+    const { pfpId } = req.params;
+    if (pfpId) {
+        try {
+            const pfpFile = await File.findById(pfpId);
+            console.log(pfpFile);
+            if (pfpFile) {
+                console.log(pfpFile.getFilePath());
+                return res.sendFile(pfpFile.getFilePath());
+            }
+            else {
+                return res.status(404);
+            }
+        }
+        catch (err) {
+            console.error(err);
+            return res.status(500);
+        }
+    }
+    else {
+        return res.status(400)
+    }
+
 }
 
 
 module.exports = {
     uploadFile,
     createNewFile,
-    removeExistingFile
+    removeExistingFile,
+    getPfpById
 }

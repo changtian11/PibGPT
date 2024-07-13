@@ -17,7 +17,7 @@ export interface ChatRoom {
 export interface User {
     nickname: string;
     username: string;
-    profilePhoto: string;
+    pfpId?: string;
     role: string
 }
 

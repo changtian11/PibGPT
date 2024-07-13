@@ -70,9 +70,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
-    console.log(password);
     const user = await User.findOne({ username });
-    console.log(user);
     try {
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.send({
@@ -125,7 +123,7 @@ const updateUserPfp = async (req, res) => {
     }
 }
 
-const getUserPfp = async (req, res) => {
+const getUserPfpByUserId = async (req, res) => {
     const { userId, userRole } = req.body.user;
     if (userId) {
         try {
@@ -197,4 +195,4 @@ const updateUserProfile = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, getUserProfile, getUserPfp, updateUserPfp, updateUserProfile, authenticateUser };
+module.exports = { registerUser, loginUser, getUserProfile, updateUserPfp, updateUserProfile, authenticateUser };
