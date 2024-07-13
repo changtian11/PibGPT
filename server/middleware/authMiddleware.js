@@ -30,8 +30,7 @@ const authMiddleware = async (req, res, next) => {
 
     const blacklistedToken = await BlacklistedToken.findOne({ token });
     if (blacklistedToken) {
-        res.clearCookie('token');
-        return res.json({
+        return res.clearCookie('token').json({
             success: false,
             code: 401,
             message: "Invalid token"
@@ -39,11 +38,10 @@ const authMiddleware = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = await jwt.verify(token, JWT_SECRET);
         const user = await User.findById(decoded.userId);
         if (!user) {
-            res.clearCookie('token');
-            return res.json({
+            return res.clearCookie('token').json({
                 success: false,
                 message: 'User not found',
                 code: 401
@@ -53,18 +51,18 @@ const authMiddleware = async (req, res, next) => {
             username: user.username,
             nickname: user.nickname,
             role: user.role,
-            pfpId: user.profilePhoto ? user.profilePhoto._id : null
+            pfpId: user.profilePhoto ? user.profilePhoto._id : null,
+            userId: user._id
         };
         next()
     }
 
     catch (error) {
         console.log(error);
-        res.clearCookie('token');
         return res.json({
             success: false,
-            code: 401,
-            message: 'Invalid token'
+            code: 500,
+            message: 'Internal server error'
         })
     }
 }
