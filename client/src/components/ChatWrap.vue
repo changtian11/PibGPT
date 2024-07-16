@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, watch, onMounted, onUnmounted } from 'vue';
+    import { ref, onMounted, onUnmounted } from 'vue';
     import type { Ref } from 'vue';
     import { ChatMessageToRender } from '../types/types';
     import ChatItem from './ChatItem.vue';
@@ -48,14 +48,6 @@
 
     const emitAnimationState = (state: boolean) => emit('animation-playing', state);
 
-
-    watch(
-        () => props.messages,
-        (newMessage) => {
-            console.log(newMessage);
-        }
-    )
-
     // watch(isAnimationPlaying, (newVal) => {
     //     if (newVal) {
     //         while (isAnimationPlaying.value) {
@@ -88,16 +80,18 @@
         flex-direction: column;
         background-color: var(--page-bg);
         opacity: 1;
-        transition: all 1s;
+        transition: all .8s ease-out;
         padding: 0;
         min-height: 0;
         overflow-y: scroll;
         overflow-x: hidden;
+        max-height: unset;
     }
 
     .chat-container.folded {
         opacity: 0;
-        flex-grow: 0.00001;
+        flex-grow: 0;
+        /* max-height: 0; */
     }
 
     .chat-container::-webkit-scrollbar {
