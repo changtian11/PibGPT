@@ -2,11 +2,11 @@
     import { ref, watch } from 'vue';
     import { NButton, NTooltip, NIcon } from 'naive-ui';
     import { Copy, Share } from '@vicons/carbon';
-    import type { ChatMessage } from '../types/types';
+    import type { ChatMessageToRender } from '../types/types';
 
     interface Props {
-        message: ChatMessage,
-        userPfpUrl: string;
+        message: ChatMessageToRender,
+        userPfpUrl?: string;
     }
 
     const props = defineProps<Props>();
@@ -54,11 +54,11 @@
 
 <template>
     <div class="chat-item">
-        <div v-if="message.sender === 'user'" class="message">
+        <div v-if="message.role === 'user'" class="message">
             <div class="pfp-placeholder"></div>
             <div class="message-content sender">
                 <div class="bubble">
-                    <img v-if="message.type === 'image'" class="image" :src="message.content"></img>
+                    <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
                     <div v-else class="text">{{ message.content }}</div>
                 </div>
             </div>
@@ -68,7 +68,7 @@
         </div>
         <div v-else class="message">
             <div class="pfp">
-                <img src="../assets/robot-green.png" alt="Pib">
+                <img src="@/assets/robot-green.png" alt="Pib">
             </div>
             <div class="message-content receiver">
                 <div class="bubble">
@@ -78,7 +78,7 @@
                         <div class="dot"></div>
                     </div>
                     <div v-else>
-                        <img v-if="message.type === 'image'" class="image" :src="message.content"></img>
+                        <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
                         <div v-else-if="message.isAnimated" class="text">{{ animatedText }}</div>
                         <div v-else class="text">{{ message.content }}</div>
                         <div v-if="!isAnimationPlaying" class="functionButtons">

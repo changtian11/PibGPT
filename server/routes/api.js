@@ -14,21 +14,21 @@ const adminAuthMiddleware = require('../middleware/adminAuthMiddleware');
 router.post('/register', uploadMiddleware, userCtl.registerUser);
 router.post('/login', userCtl.loginUser);
 
-// Get resources
-router.get('/getPfpById/:pfpId', fileCtl.getPfpById);
-
-
 // Privileged actions 
 router.get('/auth', authMiddleware, userCtl.authenticateUser)
-router.post('/update-pfp', authMiddleware, userCtl.updateUserPfp);
-router.get('/getUserProfile', authMiddleware, userCtl.getUserProfile);
+router.post('/profile/pfp', authMiddleware, userCtl.updateUserPfp);
 router.get('/logout', authMiddleware, userCtl.logoutUser)
+router.post('/upload', authMiddleware, uploadMiddleware, fileCtl.uploadFile);
+
 
 // Chat-related
+router.get('/chatroom/create', authMiddleware, chatCtl.createChatRoom);
+router.post('/chatroom/upload', authMiddleware, uploadMiddleware, fileCtl.uploadFileToChat);
+router.get('/chatroom/list', authMiddleware, chatCtl.getChatRoomList);
+router.get('/chatroom/h/:roomId?', authMiddleware, chatCtl.getChatRoomMessageHistory);
+router.delete('/chatroom/del/:roomId', authMiddleware, chatCtl.deleteChatRoomById);
+router.delete('/chatroom/empty', authMiddleware, chatCtl.deleteEmptyChatRooms);
+router.delete('/chatroom/all', authMiddleware, chatCtl.deleteAllChatRooms);
 
-router.get('/createChatroom', authMiddleware, chatCtl.createChatRoom)
-router.get('/chat/:chatId', authMiddleware, chatCtl.getChatRoomMessageHistory)
-router.get('/chatrooms', authMiddleware, chatCtl.getUserChatRoomList);
-router.get('/all-chatrooms', authMiddleware, adminAuthMiddleware, chatCtl.getAllChatRoomList);
 
 module.exports = router;

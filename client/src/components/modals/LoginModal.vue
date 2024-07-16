@@ -1,6 +1,6 @@
 <template>
     <div class="modal-component">
-        <div class="modal login-modal box_shadow_level_two">
+        <div class="modal login-modal box-shadow-level-two">
             <div class="title">
                 <span>登录/注册</span>
             </div>
@@ -51,12 +51,19 @@
     import { ref, reactive, onMounted, onUnmounted, h } from 'vue';
     import { NInputGroup, NInput, NSelect, NButton, NTooltip, NAlert, useMessage } from 'naive-ui';
     import type { MessageRenderMessage } from 'naive-ui';
-    import type { ApiResponse, User, Login } from '../types/types';
+    import type { ApiResponse, User } from '../../types/types';
     import axios from 'axios';
     const emit = defineEmits(['cancel', 'login-success']);
+
+    export interface Login {
+        username: string;
+        password: string;
+    }
+    
     const smsOtpBtnDisable = ref(false);
     const smsOtpBtnCountdown = ref(0);
     const isLoading = ref(false);
+
     const loginForm = reactive<Login>({
         username: '',
         password: ''
@@ -148,6 +155,10 @@
                 const res = await axios.post<ApiResponse<User>>('/api/login', {
                     username: loginForm.username,
                     password: loginForm.password
+                }, {
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
                 })
                 console.log(res);
                 if (res.data.success) {
@@ -335,5 +346,5 @@
 </script>
 
 <style>
-    @import "../stylesheets/modal.css";
+    @import "@/stylesheets/modal.css";
 </style>

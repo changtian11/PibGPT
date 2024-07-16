@@ -3,7 +3,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
 const BlacklistedToken = require('../models/blacklistedTokenModel');
-const { createNewFile } = require('../controllers/fileController');
+const { createAndMoveFile } = require('../controllers/fileController');
 
 const registerUser = async (req, res) => {
     const { username, password, role, filePurpose, nickname } = req.body;
@@ -39,7 +39,7 @@ const registerUser = async (req, res) => {
 
         if (req.file) {
             const { filename } = req.file;
-            const newFile = await createNewFile(filename, 'profilePhoto');
+            const newFile = await createAndMoveFile(filename, 'profilePhoto');
             profilePhoto = newFile._id;
         }
 
@@ -109,6 +109,10 @@ const authenticateUser = (req, res) => {
     });
 }
 
+const getUserProfile = (req, res) => {
+
+}
+
 const logoutUser = async (req, res) => {
     try {
         const token = req.cookies.token
@@ -126,15 +130,6 @@ const logoutUser = async (req, res) => {
             message: 'Logout failed',
             code: 500
         })
-    }
-}
-
-const getUserProfile = async (req, res) => {
-    try {
-
-    }
-    catch (error) {
-
     }
 }
 

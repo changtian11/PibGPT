@@ -1,12 +1,13 @@
 <template>
-    <div class="menu-wrap box_shadow_level_one hoverable">
+    <div class="menu-wrap box-shadow-level-one hoverable">
         <div class="menu-inner">
-            <img id="logo" class="box_shadow_level_one" src="../assets/Pib.png" alt="Pib Logo">
+            <img id="logo" class="box_shadow-level-one" src="../assets/Pib.png" alt="Pib Logo">
             <div class="divider"></div>
             <template v-if="isLoggedIn">
-                <NTooltip placement="left" trigger="hover">
+                <NTooltip placement="left" trigger="hover" :disabled="!allowNewChatBtn">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large" style="margin: 4px 0">
+                        <NButton quaternary :bordered="false" size="large" style="margin: 4px 0"
+                            @click="emit('new-chat')" :disabled="!allowNewChatBtn">
                             <template #icon>
                                 <NIcon :size="24">
                                     <NewTab />
@@ -18,7 +19,8 @@
                 </NTooltip>
                 <NTooltip placement="left" trigger="hover">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large" style="margin: 4px 0">
+                        <NButton quaternary :bordered="false" size="large" style="margin: 4px 0"
+                            @click="emit('history')">
                             <template #icon>
                                 <NIcon :size="24">
                                     <DataBackup />
@@ -46,7 +48,7 @@
                     <NDropdown :options="dropdownOptions" placement="left" size="large" :keyboard="false"
                         trigger="click" style="margin-right: 24px; border-radius: 12px" :arrow-point-to-center="true"
                         :show-arrow="true" @select="handleSelect">
-                        <img id="userPfp" :src="`/api/getPfpById/${user?.pfpId}`" alt="Pib Logo">
+                        <img id="userPfp" :src="`/static/pfp/${user?.pfpId}`" alt="Pib Logo">
                     </NDropdown>
                 </div>
             </template>
@@ -67,12 +69,13 @@
 
     interface Props {
         isLoggedIn: boolean,
-        user: User | null
+        user: User | null,
+        allowNewChatBtn: boolean
     }
 
     const props = defineProps<Props>();
 
-    const emit = defineEmits(['scroll-to-bottom', 'login', 'logout-success']);
+    const emit = defineEmits(['scroll-to-bottom', 'login', 'logout-success', 'new-chat', 'history']);
 
     const renderIcon = (icon: Component) => {
         return () => h(NIcon, null, {
@@ -86,7 +89,7 @@
         },
             [h('img', {
                 style: "width: 40x; height: 40px; border-radius: 50%; padding-left: 2px; object-fit: cover; -webkit-user-drag: none",
-                src: `/api/getPfpById/${props.user?.pfpId}`
+                src: `/static/pfp/${props.user?.pfpId}`
             }),
             h('div', {
                 style: 'text-align: left; display: flex; flex-direction: column; flex-wrap: nowrap;padding-right: 4px'
@@ -143,6 +146,7 @@
             console.error(error)
         }
     }
+
 
     const dropdownOptions = [
         {

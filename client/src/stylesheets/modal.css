@@ -57,6 +57,7 @@
     user-select: none;
     padding: 0 12px;
     font-weight: bold;
+    color: var(--accent-color);
 }
 
 .modal-component .form-container {
@@ -74,7 +75,7 @@
     user-select: none;
     font-size: 14px;
     margin-bottom: 4px;
-    color: #5E5E5E;
+    color: #5e5e5e;
 }
 
 .modal-component .form-actions {
@@ -85,4 +86,75 @@
     margin: 1rem 0;
     align-items: center;
     justify-content: center;
+}
+.modal-component .loading {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-component .list-container {
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: left;
+    display: block;
+    padding: 12px 12px 12px 24px;
+    min-height: 100px;
+    max-height: 70vh;
+}
+
+.modal-component .list-item {
+    height: 90px;
+    position: relative;
+    padding: 1rem 2rem 1rem 1rem;
+    user-select: none;
+    cursor: pointer;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: background-color 0.3s ease-out;
+    overflow: hidden;
+}
+
+.modal-component .list-item:last-child {
+    margin-bottom: 0;
+}
+
+.modal-component .list-item:hover {
+    background-color: var(--item-hover-bg);
+}
+
+.modal-component .list-item:active {
+    background-color: var(--item-active-bg);
+    transition: none;
+}
+
+.modal-component .list-item p {
+    margin: 0;
+}
+
+.modal-component .list-item p.topic {
+    font-weight: 800;
+    font-size: large;
+    color: var(--text-primary);
+}
+
+.modal-component .list-item p.time {
+    color: var(--text-secondary);
+}
+
+.modal-component .list-item .options {
+    position: absolute;
+    display: inline-flex;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: 0 1rem 0 0;
+    transform: translateX(200px);
+    z-index: 301;
+    align-items: center;
+}
+
+.modal-component .list-item:hover .options {
+    transform: translateX(0);
 }

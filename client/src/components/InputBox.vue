@@ -1,40 +1,37 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
     import { NButton, NTooltip, NIcon } from 'naive-ui';
-    import { SendFilled, DocumentAdd } from '@vicons/carbon';
-
-    const userInput = ref("");
+    import { SendFilled, DocumentAdd, Stop } from '@vicons/carbon';
 
     defineProps({
-        isAwaitingResponse: Boolean,
-        isAnimationPlaying: Boolean
+        awaitingResponse: Boolean,
+        animationPlaying: Boolean
     })
+
+    const modelValue = defineModel()
 
     const emit = defineEmits(
         ['submit']
     )
 
     const submitText = () => {
-        //Reject blank submission
-        if (userInput.value.trim() !== '') {
-            emit('submit', userInput.value.trim())
-        }
-        userInput.value = "";
+        // Reject blank submission
+        emit('submit');
     }
 
 </script>
 
 <template>
-    <div class="input-container box_shadow_level_one hoverable">
+    <div class="input-container box-shadow-level-one hoverable">
         <div class="input-inner">
             <div class="input-wrap">
-                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="userInput"
-                    @keyup.enter="submitText()"></input>
+                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="modelValue"
+                    @keyup.enter="submitText()" :disabled="awaitingResponse || animationPlaying"></input>
             </div>
             <div class="side-buttons">
-                <NTooltip placement="top" trigger="hover">
+                <NTooltip placement="top" trigger="hover" :disabled="awaitingResponse || animationPlaying">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large">
+                        <NButton quaternary :bordered="false" size="large"
+                            :disabled="awaitingResponse || animationPlaying">
                             <template #icon>
                                 <NIcon>
                                     <DocumentAdd />
@@ -44,7 +41,19 @@
                     </template>
                     上传文档/图像
                 </NTooltip>
-                <NTooltip placement="top" trigger="hover">
+                <NTooltip v-if="awaitingResponse || animationPlaying" placement="top" trigger="hover">
+                    <template #trigger>
+                        <NButton quaternary :bordered="false" size="large" @click="submitText()">
+                            <template #icon>
+                                <NIcon>
+                                    <Stop />
+                                </NIcon>
+                            </template>
+                        </NButton>
+                    </template>
+                    停止生成
+                </NTooltip>
+                <NTooltip v-else placement="top" trigger="hover">
                     <template #trigger>
                         <NButton quaternary :bordered="false" size="large" @click="submitText()">
                             <template #icon>
@@ -88,6 +97,7 @@
         width: 100%;
         padding: 4px 8px;
         font-size: 16px;
+        background-color: var(--item-bg);
     }
 
     #input-box,

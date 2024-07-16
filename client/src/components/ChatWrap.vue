@@ -1,26 +1,40 @@
 <template>
-    <div class="chat-container" id="chat-container" :class="{ collapse: collapse }" ref="chatContainerRef">
-        <ChatItem v-for="message in props.messages" :message="message" :user-pfp-url="userPfpUrl" :key="message.id"
-            @animation-playing="emitAnimationState">
+    <div class="chat-container" id="chat-container" :class="{ folded: folded }" ref="chatContainerRef">
+        <ChatItem v-for="message in props.messages" :message="message" :user-pfp-url="userPfpUrl"
+            :key="message.timestamp" @animation-playing="emitAnimationState">
         </ChatItem>
+        <Transition>
+            <ChatItem v-if="loading" :message="botLoadingMsg"> </ChatItem>
+        </Transition>
     </div>
 </template>
 
 <script setup lang="ts">
     import { ref, watch, onMounted, onUnmounted } from 'vue';
     import type { Ref } from 'vue';
-    import { ChatMessage } from '../types/types';
+    import { ChatMessageToRender } from '../types/types';
     import ChatItem from './ChatItem.vue';
 
     interface Props {
-        messages: ChatMessage[],
+        messages: ChatMessageToRender[],
         userPfpUrl?: string,
-        collapse?: boolean
+        folded?: boolean,
+        loading: boolean
     }
 
     const props = withDefaults(defineProps<Props>(), {
         userPfpUrl: "https://picsum.photos/seed/picsum/200"
     });
+
+    const botLoadingMsg: ChatMessageToRender = {
+        type: 'text',
+        isLoading: true,
+        isAnimated: false,
+        content: '',
+        role: 'bot',
+        timestamp: ''
+    }
+
     const emit = defineEmits(['update-messages', 'animation-playing'])
 
     const chatContainerRef = ref() as Ref<HTMLElement>;
@@ -81,7 +95,7 @@
         overflow-x: hidden;
     }
 
-    .chat-container.collapse {
+    .chat-container.folded {
         opacity: 0;
         flex-grow: 0.00001;
     }

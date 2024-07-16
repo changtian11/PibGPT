@@ -1,33 +1,96 @@
 const File = require('../models/fileModel');
 const { moveFile, deleteFile, getFileType } = require('../utils/fileUtil');
+const { ResErrorConstructor } = require('../utils/errorHandler');
 
 const uploadFile = async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            })
+        }
         const { originalname, filename } = req.file;
-        const fileExtension = path.extname(originalname).toLowerCase().substring(1);
-        const fileType = getFileType(fileExtension);
-        const file = new File({ filename, fileType });
-        await file.save()
+        const fileType = getFileType(originalname);
+        const newFile = new File({ filename, fileType });
         await moveFile(filename, fileType);
-        res.json({
+        await newFile.save()
+        return res.json({
             success: true,
             code: 200,
-            message: 'File uploaded'
+            data: {
+                fileId: newFile._id
+            }
         })
     }
-
-    catch (error) {
-        res.json(
-            {
-                success: false,
-                code: 500,
-                message: error
-            }
-        )
+    catch (err) {
+        console.error(err);
+        res.status(500).json(ResErrorConstructor.InternalServerError);
     }
 }
 
-const createNewFile = async (filename, forceFileType) => {
+const uploadFileToChat = async (req, res) => {
+    const { userId, role } = req.user;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({
+            success: false,
+            message: 'No file uploaded',
+            code: 401
+        });
+    }
+
+    const chatRoom = await ChatRoom.findOne({ roomId }).populate('users');
+
+    if (!chatRoom) {
+        return res.status(402).json({
+            success: false,
+            message: 'Targeted chat room does not exist',
+            code: 402
+        })
+    }
+
+    else if (role === 'user') {
+        const isUserInRoom = chatRoom.users.some((roomUser) => roomUser._id.equals(user._id));
+        if (!isUserInRoom) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized',
+                code: 401
+            })
+        }
+    }
+
+    const newFile = new File({
+        filename: file.filename,
+        fileType,
+    });
+    await newFile.save();
+
+    const newChatMessage = new ChatMessage({
+        type: 'file',
+        sender: userId,
+        file: newFile._id,
+    });
+    await newChatMessage.save();
+
+    chatRoom.addMessage(newChatMessage._id);
+    await chatRoom.save();
+
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN && client.chatRoom && client.chatRoom.roomId === roomId) {
+            client.send(JSON.stringify(newChatMessage));
+        }
+    });
+
+    return res.json({
+        success: true,
+        code: 200
+    })
+}
+
+const createAndMoveFile = async (filename, forceFileType) => {
     let fileType = null;
     if (forceFileType) {
         fileType = forceFileType
@@ -48,35 +111,58 @@ const removeExistingFile = async (fileObj) => {
     });
 }
 
-const getPfpById = async (req, res) => {
+const getPfpByFileId = async (req, res) => {
     const { pfpId } = req.params;
-    if (pfpId) {
-        try {
-            const pfpFile = await File.findById(pfpId);
-            console.log(pfpFile);
-            if (pfpFile) {
-                console.log(pfpFile.getFilePath());
-                return res.sendFile(pfpFile.getFilePath());
-            }
-            else {
-                return res.status(404);
-            }
-        }
-        catch (err) {
-            console.error(err);
-            return res.status(500);
-        }
-    }
-    else {
-        return res.status(400)
+    if (!pfpId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid profile photo id'
+        })
     }
 
+    try {
+        const pfpFile = await File.findById(pfpId);
+        if (pfpFile) {
+            return res.sendFile(pfpFile.getFilePath());
+        }
+        else {
+            return res.status(404);
+        }
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json(ResErrorConstructor.InternalServerError);
+    }
 }
 
+const getFileByFileId = async (req, res) => {
+    const { fileId } = req.params;
+    if (!fileId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid file id'
+        })
+    }
+    try {
+        const file = await File.findById(fileId);
+        if (file) {
+            return res.sendFile(file.getFilePath());
+        }
+        else {
+            return res.status(404);
+        }
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json(ResErrorConstructor.InternalServerError);
+    }
+}
 
 module.exports = {
     uploadFile,
-    createNewFile,
+    uploadFileToChat,
+    createAndMoveFile,
     removeExistingFile,
-    getPfpById
+    getPfpByFileId,
+    getFileByFileId
 }

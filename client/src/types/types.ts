@@ -1,34 +1,39 @@
 export interface ChatMessage {
-    id: number; // Unique identifier
-    type: 'text' | 'image';
-    content: string;
-    sender: 'user' | 'bot';
-    isLoading?: boolean; // Indicates if the message is loading
-    isAnimated?: boolean; // Indicates if the message should be animated
+    type: 'text' | 'file',
+    content: string // text or fileId
+}
+export interface ChatMessageFromServer extends ChatMessage {
+    role: 'user' | 'bot';
+    timestamp: string;
+}
+export interface ChatMessageToRender extends ChatMessageFromServer {
+    isLoading: boolean; // Indicates if the message is loading
+    isAnimated: boolean; // Indicates if the message should be animated
+}
+export interface ChatRoomFromServer {
+    roomId: string,
+    topic: string,
+    lastMessageTime: string
 }
 
-export interface ChatRoom {
-    roomId: number;
-    topic: string;
-    messages: ChatMessage[];
-    lastMessageTime: string;
+export interface ChatRoomHistoryFromServer extends ChatRoomFromServer {
+    messages: ChatMessageFromServer[]
 }
-
 export interface User {
     nickname: string;
     username: string;
     pfpId?: string;
     role: string
 }
-
-export interface Login {
-    username: string;
-    password: string;
-}
-
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
     message?: string;
     code?: number;
+}
+
+export interface WsServerMessage<T> {
+    success: boolean,
+    event: string,
+    payload?: T
 }

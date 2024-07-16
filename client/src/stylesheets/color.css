@@ -1,14 +1,17 @@
 :root {
     --page-bg: #f3f3f4;
     --item-bg: #ffffff;
-    --item-focus-bg: #d3d3d3;
+    --item-hover-bg: #f9f9f9;
+    --item-active-bg: #ececec;
     --border: #e5e5e5;
     --sender-text-color: #fff;
     --sender-bg: #0b93f6;
     --receiver-text-color: black;
     --receiver-bg: #fff;
-    --divider: #E5E5E5;
+    --divider: #e5e5e5;
     --accent-color: #208320;
     --highlight-color: #29a829;
     --active-color: #175e17;
+    --text-primary: black;
+    --text-secondary: #4d4256;
 }

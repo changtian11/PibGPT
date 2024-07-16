@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ChatMessage = require('./chatMessageModel');
 
 const chatRoomSchema = new mongoose.Schema({
     roomId: { type: String, required: true, unique: true },
@@ -7,7 +8,7 @@ const chatRoomSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, ref: 'ChatMessage'
     }],
     lastMessageTime: { type: Date, default: () => Date.now() },
-    topic: { type: String, required: true },
+    topic: { type: String },
 }, {
     methods: {
         addUser(userId) {
@@ -20,6 +21,16 @@ const chatRoomSchema = new mongoose.Schema({
         updateTopic(newTopic) {
             this.topic = newTopic;
         }
+    }
+});
+
+chatRoomSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+    try {
+        let chatRoom = this;
+        await chatRoom.model('ChatMessage').deleteMany({ _id: { $in: chatRoom.messages } });
+        next()
+    } catch (error) {
+        next(error);
     }
 });
 

@@ -1,25 +1,66 @@
+<template>
+  <NMessageProvider>
+    <Transition>
+      <LoginModal v-if="pageState.showLoginModal" @cancel="pageState.showLoginModal = false"
+        @login-success="loginSuccessHandler" />
+    </Transition>
+    <Transition>
+      <ChatRoomListModal v-if="pageState.showChatRoomListModal" @cancel="pageState.showChatRoomListModal = false" />
+    </Transition>
+    <div class="page-container">
+      <FloatingMenu @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" @login="pageState.showLoginModal = true"
+        :is-logged-in="loginState.isLoggedin" :user="loginState.user" @logout-success="validateLogin"
+        @new-chat="handleNewChatRoom" @history="pageState.showChatRoomListModal = true"
+        :allow-new-chat-btn="chatRoomState.chatRoom !== null" />
+      <div class="main-container" :class="{ folded: pageState.isChatWrapFolded }">
+        <TitleLogo :chat-title="chatRoomState.chatRoom?.topic" :folded="pageState.isChatWrapFolded">
+        </TitleLogo>
+        <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="`/static/pfp/${loginState.user?.pfpId}`"
+          :folded="pageState.isChatWrapFolded" :loading="pageState.isAwaitingResponse"
+          @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }">
+        </ChatWrap>
+        <InputBox @submit="handleSubmit" v-model="pageState.inputBoxContent"
+          :awaiting-response="pageState.isAwaitingResponse" :animation-playing="pageState.isMsgAnimationPlaying">
+        </InputBox>
+        <div id="copyright">
+          <span>©PibGPT 2024. All rights reserved.</span>
+          <span>内容由 AI 大模型生成，请仔细甄别。</span>
+        </div>
+      </div>
+    </div>
+  </NMessageProvider>
+</template>
+
 <script setup lang="ts">
-  import FloatingMenu from '../components/FloatingMenu.vue';
-  import InputBox from '../components/InputBox.vue';
-  import TitleLogo from '../components/TitleLogo.vue';
-  import ChatWrap from '../components/ChatWrap.vue';
-  import LoginModal from '../components/LoginModal.vue';
-  import { ref, onMounted, reactive, h } from 'vue';
+  import FloatingMenu from '@/components/FloatingMenu.vue';
+  import InputBox from '@/components/InputBox.vue';
+  import TitleLogo from '@/components/TitleLogo.vue';
+  import ChatWrap from '@/components/ChatWrap.vue';
+  import LoginModal from '@/components/modals/LoginModal.vue';
+  import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
+  import { ref, onMounted, reactive, h, onBeforeUnmount } from 'vue';
   import type { Ref } from 'vue';
-  import type { ApiResponse, ChatMessage, ChatRoom, User } from '../types/types';
+  import type { ApiResponse, ChatMessageFromServer, ChatMessageToRender, ChatRoomFromServer, User, WsServerMessage, ChatRoomHistoryFromServer } from '../types/types';
   import { NMessageProvider, NAlert, useMessage } from 'naive-ui';
   import type { MessageRenderMessage } from 'naive-ui'
+  import wss from '@/services/websocketService';
   import axios from 'axios';
 
-  // Page elements control
-  const isChatWrapCollapse = ref(true);
-  const isAwaitingResponse = ref(false);
-  const isMsgAnimationPlaying = ref(false);
-  const showLoginModal = ref(false);
-  const chatTitle = ref("");
 
+  // Page State
+  const pageState = reactive({
+    showLoginModal: false,
+    showChatRoomListModal: false,
+    isMsgAnimationPlaying: false,
+    isAwaitingResponse: false,
+    isChatWrapFolded: true,
+    inputBoxContent: ""
+  })
 
-  // User model
+  // Page element refs
+  const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrap>>
+
+  // Chat model
   interface LoginState {
     isLoggedin: boolean;
     user: User | null
@@ -30,6 +71,19 @@
     user: null
   });
 
+  interface ChatRoomState {
+    chatRoom: null | ChatRoomFromServer,
+    isWsConnected: boolean
+  }
+
+  const chatRoomState = reactive<ChatRoomState>({
+    chatRoom: null,
+    isWsConnected: false
+  });
+
+  const chatMessages: Ref<ChatMessageToRender[]> = ref([]);
+
+
   // Validate the login and fetch user data
   const validateLogin = async () => {
     try {
@@ -39,7 +93,6 @@
       if (res.data.success) {
         loginState.isLoggedin = true;
         loginState.user = res.data.data;
-        console.log(loginState.user);
       }
       else {
         loginState.isLoggedin = false;
@@ -61,157 +114,199 @@
 
   const loginSuccessHandler = () => {
     validateLogin();
-    setTimeout(() => showLoginModal.value = false, 200);
+    setTimeout(() => pageState.showLoginModal = false, 200);
   }
 
-  // Page element refs
-  const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrap>>
+  const wsConnectAndJoinRoom = async () => {
+    try {
+      if (wss.isJoined && chatRoomState.chatRoom && chatRoomState.chatRoom!.roomId === wss.joinedRoomId) { return; }
 
-  // Manage Chat Messages model
-  const chatMessages: Ref<ChatMessage[]> = ref([]);
-
-  const addMessage = (message: ChatMessage) => {
-    chatMessages.value.push(message);
-  }
-
-  const updateMessage = (id: number, updateMessage: Partial<ChatMessage>) => {
-    const message = chatMessages.value.find(msg => msg.id === id);
-    if (message) {
-      Object.assign(message, updateMessage);
+      if (!chatRoomState.chatRoom) {
+        await getNewChatRoom();
+      }
+      const roomId = chatRoomState.chatRoom!.roomId;
+      if (wss.getWsState()) {
+        if (wss.isJoined && roomId === wss.joinedRoomId) {
+          return;
+        }
+        if (wss.isJoined) wss.leaveRoom();
+        wss.joinRoom(roomId, () => {
+          chatRoomState.isWsConnected = true;
+          console.log('Joined room successfully');
+        });
+      }
+      else {
+        chatRoomState.isWsConnected = false;
+        wss.connectAndJoinRoom(roomId, () => {
+          chatRoomState.isWsConnected = true;
+          wss.joinRoom(roomId, () => {
+            console.log('Joined room successfully');
+          });
+        })
+      }
+      window.history.pushState(null, '', `/${chatRoomState.chatRoom?.roomId}`);
+    }
+    catch (err) {
+      console.error(err);
+      throw err;
     }
   }
+
+  const waitForReady = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const checkInterval = setInterval(() => {
+        console.log(wss.isJoined);
+        if (wss.isJoined) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100); // Check every 100ms
+
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('Failed to connect'));
+      }, 5000); // Timeout after 5 seconds
+    });
+  };
 
   // Handle InputBox Submission
-  const handleSubmit = async (content: string) => {
-    const userMsg: ChatMessage = {
-      id: Date.now(),
-      type: 'text',
-      content: content,
-      sender: 'user',
-      isLoading: false,
-      isAnimated: false
+  const handleSubmit = async () => {
+    if (!loginState.isLoggedin) {
+      pageState.showLoginModal = true;
+      return;
     }
 
-    /**
-     * Also add a loading prompt for the response
-     */
-    const loadingMessageId = userMsg.id + 10
-    const loadingMsg: ChatMessage = {
-      id: loadingMessageId,
-      type: 'text',
-      content: '',
-      sender: 'bot',
-      isLoading: true,
-      isAnimated: false
+    const content = pageState.inputBoxContent;
+    if (!content || String(content).trim().length === 0) {
+      return;
     }
-    isChatWrapCollapse.value = false;
-    addMessage(userMsg);
-    addMessage(loadingMsg);
-    isAwaitingResponse.value = true;
-
-    const simulateBackendResponse = (message: string, timeout: number): Promise<string> => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(`我是复读机：${message}`);
-        }, timeout);
-      });
-    };
 
     try {
-      const response = await simulateBackendResponse(content, 2000);
-      const botResponse: Partial<ChatMessage> = {
-        content: response,
-        isLoading: false,
-        isAnimated: true
-      };
-      updateMessage(loadingMessageId, botResponse)
+      await wsConnectAndJoinRoom();
+      await waitForReady();
+      wss.sendChatMessage(content);
+      pageState.inputBoxContent = "";
+      // Also add a loading prompt for the response
+      pageState.isChatWrapFolded = false;
+      setTimeout(() => {
+        pageState.isAwaitingResponse = true;
+      }, 500)
     }
-    catch (error) {
-      console.log(error);
-    }
-
-    finally {
-      isAwaitingResponse.value = false;
+    catch (err) {
+      console.error(err);
     }
   }
 
+  const getChatRoomHistory = async (roomId: string) => {
+    chatRoomState.chatRoom = null;
+    // pageState.isAwaitingResponse = true;
+    pageState.isChatWrapFolded = false;
+    try {
+      const res = await axios.get<ApiResponse<ChatRoomHistoryFromServer>>(`/api/chatroom/h/${roomId}`, {
+        withCredentials: true
+      });
+      console.log(res);
+      if (res.data.success) {
+        const chatRoomData = res.data.data;
+        chatRoomState.chatRoom = {
+          roomId: chatRoomData.roomId,
+          topic: chatRoomData.topic,
+          lastMessageTime: chatRoomData.lastMessageTime
+        }
+        chatMessages.value = chatRoomData.messages.map(msg => {
+          return {
+            isAnimated: false,
+            isLoading: false,
+            ...msg
+          }
+        });
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+    finally {
+      pageState.isAwaitingResponse = false;
+    }
+  }
 
-  /**
-   *  Test Area
-   * 
-   */
+  const getNewChatRoom = async () => {
+    chatRoomState.chatRoom = null;
+    const res = await axios.get<ApiResponse<ChatRoomFromServer>>('/api/chatroom/create', {
+      withCredentials: true
+    })
+    if (res.data.success) {
+      chatRoomState.chatRoom = res.data.data;
+    }
+    else {
+      console.error(res.data.message);
+      throw Error(`Error ${res.data.code}: ${res.data.message}`);
+    }
+  }
 
-  const longText = 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius maxime, eum nulla dolor quisquam soluta unde, necessitatibus veritatis consequuntur modi ipsam ad omnis! Porro incidunt repellat voluptatem deserunt asperiores tempora.Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius maxime, eum nulla dolor quisquam soluta unde, necessitatibus veritatis consequuntur modi ipsam ad omnis! Porro incidunt repellat voluptatem deserunt asperiores tempora.';
+  const handleNewChatRoom = async () => {
+    if (!loginState.isLoggedin) {
+      pageState.showLoginModal = true;
+      return;
+    }
+    wss.close();
+    chatMessages.value = [];
+    pageState.inputBoxContent = "";
+    pageState.isChatWrapFolded = true;
+    pageState.isAwaitingResponse = false;
+    pageState.isMsgAnimationPlaying = false;
+    chatRoomState.chatRoom = null;
+    window.history.pushState(null, '', '/');
+  }
 
-  // Simulate fetching chat history on mount
+  const handleOnMessage = (message: ChatMessageFromServer | null) => {
+    if (message) {
+      console.log(message)
+      let chatMessageToRender: ChatMessageToRender | null = null;
+      if (message.role === 'bot') {
+        pageState.isAwaitingResponse = false;
+        chatMessageToRender = {
+          isAnimated: true,
+          isLoading: false,
+          ...message
+        };
+      }
+      else {
+        chatMessageToRender = {
+          isAnimated: false,
+          isLoading: false,
+          ...message
+        }
+      }
+      chatMessages.value.push(chatMessageToRender);
+    }
+  }
+
+  wss.onMessage(handleOnMessage);
+
   onMounted(async () => {
+    const path = window.location.pathname;
+    let urlParam = path !== '/' ? path.substring(1) : null;
+    const roomIdReg = new RegExp(/^\d{13}-\d{7}$/)
+    console.log(urlParam)
     await validateLogin();
-
-    // const chatHistory: ChatMessage[] = [
-    //   // Sample history data
-    //   {
-    //     id: 1,
-    //     type: 'text',
-    //     content: 'Welcome back!',
-    //     sender: 'bot',
-    //     isLoading: false,
-    //     isAnimated: false
-    //   },
-    //   {
-    //     id: 2,
-    //     type: 'image',
-    //     content: 'https://picsum.photos/seed/picsum/1600',
-    //     sender: 'user',
-    //     isLoading: false,
-    //     isAnimated: false
-    //   }
-    // ];
-    // chatMessages.value = chatHistory;
+    if (urlParam) {
+      if (loginState.isLoggedin && roomIdReg.test(urlParam)) {
+        await getChatRoomHistory(urlParam);
+      }
+      else {
+        window.history.pushState(null, '', '/'); // Remove ID from URL
+      }
+    }
   });
 
-  const testMessage = (sender: 'user' | 'bot', type: 'text' | 'image', content = "", isLoading = false, isAnimated = false) => {
-    const msg: ChatMessage = {
-      id: Date.now(),
-      sender, type, content, isLoading, isAnimated
+  onBeforeUnmount(() => {
+    if (wss.isJoined) {
+      wss.leaveRoom();
     }
-    isChatWrapCollapse.value = false;
-    addMessage(msg);
-  }
-
+    wss.close();
+  });
 </script>
-
-<template>
-  <NMessageProvider>
-    <Transition>
-      <LoginModal v-if="showLoginModal" @cancel="showLoginModal = false" @login-success="loginSuccessHandler" />
-    </Transition>
-    <div class="page-container">
-      <div id="test-zone">
-        <button @click="isChatWrapCollapse = !isChatWrapCollapse">展开</button>
-        <button @click="testMessage('user', 'text', '我是铁大比大比大比大比看看铁大比')">发送方</button>
-        <button
-          @click="testMessage('bot', 'text', 'Test 基于搜索引擎的新一代信息检索AI基于搜索引擎的新一代信息检索AI基于搜索引擎的新一代信息检索AI', false, true)">机器人</button>
-        <button @click="testMessage('bot', 'image', 'https://picsum.photos/seed/picsum/2000')">机器人图片</button>
-        <button @click="testMessage('bot', 'text', longText, false, true)">机器人长文字</button>
-        <button @click="testMessage('bot', 'text', '', true)">机器人加载</button>
-      </div>
-      <FloatingMenu @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" @login="showLoginModal = true"
-        :is-logged-in="loginState.isLoggedin" :user="loginState.user" @logout-success="validateLogin"> </FloatingMenu>
-      <div class="main-container" :class="{ collapse: isChatWrapCollapse }">
-        <TitleLogo :chat-title="chatTitle" :is-collapse="isChatWrapCollapse"></TitleLogo>
-        <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="loginState.user?.pfpId"
-          :collapse="isChatWrapCollapse" @animation-playing="(state: boolean) => { isMsgAnimationPlaying = state }">
-        </ChatWrap>
-        <InputBox @submit="handleSubmit" :is-awaiting-response="isAwaitingResponse"
-          :is-animation-playing="isMsgAnimationPlaying"></InputBox>
-        <div id="copyright">
-          <span>©PibGPT 2024. All rights reserved.</span>
-          <span>内容由 AI 大模型生成，请仔细甄别。</span>
-        </div>
-      </div>
-    </div>
-  </NMessageProvider>
-</template>
 
 <style scoped>
   .main-container {
@@ -288,6 +383,5 @@
     #copyright {
       display: inline-flex;
     }
-
   }
 </style>

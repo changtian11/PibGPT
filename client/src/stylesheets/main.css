@@ -17,12 +17,18 @@ a {
   user-select: none;
   cursor: pointer;
 }
+
 a:hover {
   color: var(--highlight-color);
 }
 
 a:active {
   color: var(--active-color);
+}
+
+ul,
+ol {
+  list-style: none;
 }
 
 body {
@@ -58,7 +64,7 @@ button:hover {
 }
 
 button:active {
-  background-color: var(--item-focus-bg);
+  background-color: var(--item-active-bg);
 }
 /* button:focus,
 button:focus-visible {

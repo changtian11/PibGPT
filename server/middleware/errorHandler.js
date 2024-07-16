@@ -1,12 +1,3 @@
-const createApiError = (message, statusCode, errorCode, details) => {
-  return {
-    message,
-    statusCode,
-    errorCode,
-    details,
-  };
-}
-
 const errorHandlerMiddleware = (err, req, res, next) => {
   console.log(err.stack);
   res.status(500).json({
@@ -16,7 +7,4 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   })
 }
 
-module.exports = {
-  createApiError,
-  errorHandlerMiddleware
-}
+module.exports = errorHandlerMiddleware;

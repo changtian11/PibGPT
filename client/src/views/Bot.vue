@@ -6,4 +6,4 @@
 
 </script>
 
-<style></style>
+<style lang="css" scoped></style>
