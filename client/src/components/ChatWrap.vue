@@ -1,5 +1,6 @@
 <template>
-    <div class="chat-container" id="chat-container" :class="{ folded: folded }" ref="chatContainerRef">
+    <div class="chat-container" id="chat-container" :class="{ folded: folded, transitioned: transitioned }"
+        ref="chatContainerRef">
         <ChatItem v-for="message in props.messages" :message="message" :user-pfp-url="userPfpUrl"
             :key="message.timestamp" @animation-playing="emitAnimationState">
         </ChatItem>
@@ -19,11 +20,13 @@
         messages: ChatMessageToRender[],
         userPfpUrl?: string,
         folded?: boolean,
-        loading: boolean
+        loading: boolean,
+        transitioned: boolean
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        userPfpUrl: "https://picsum.photos/seed/picsum/200"
+        userPfpUrl: "https://picsum.photos/seed/picsum/200",
+        transitioned: false
     });
 
     const botLoadingMsg: ChatMessageToRender = {
@@ -80,18 +83,20 @@
         flex-direction: column;
         background-color: var(--page-bg);
         opacity: 1;
-        transition: all .8s ease-out;
         padding: 0;
         min-height: 0;
         overflow-y: scroll;
         overflow-x: hidden;
-        max-height: unset;
+    }
+
+    .chat-container.transitioned {
+        transition: all 1s ease-out;
     }
 
     .chat-container.folded {
         opacity: 0;
         flex-grow: 0;
-        /* max-height: 0; */
+        max-height: 0;
     }
 
     .chat-container::-webkit-scrollbar {
