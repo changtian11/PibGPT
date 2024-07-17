@@ -35,7 +35,7 @@
   import FloatingMenu from '@/components/FloatingMenu.vue';
   import InputBox from '@/components/InputBox.vue';
   import TitleLogo from '@/components/TitleLogo.vue';
-  import ChatWrap from '@/components/ChatWrap.vue';
+  import ChatWrap from '@/components/ChatWrapper.vue';
   import LoginModal from '@/components/modals/LoginModal.vue';
   import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
   import { ref, onMounted, reactive, h, onBeforeUnmount } from 'vue';
