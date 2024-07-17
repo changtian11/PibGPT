@@ -133,16 +133,6 @@
     margin: 0;
 }
 
-.modal-component .list-item p.topic {
-    font-weight: 800;
-    font-size: large;
-    color: var(--text-primary);
-}
-
-.modal-component .list-item p.time {
-    color: var(--text-secondary);
-}
-
 .modal-component .list-item .options {
     position: absolute;
     display: inline-flex;

@@ -136,6 +136,6 @@
 
 </script>
 
-<style>
-    @import "@/stylesheets/modal.css";
+<style scoped>
+
 </style>
