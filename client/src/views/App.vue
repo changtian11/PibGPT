@@ -14,16 +14,14 @@
         @new-chat="handleNewChatRoom" @history="pageState.showChatRoomListModal = true"
         :allow-new-chat-btn="chatRoomState.chatRoom !== null" />
       <div class="main-container" :class="{ folded: pageState.isChatWrapFolded }">
-        <TitleLogo :chat-title="chatRoomState.chatRoom?.topic" :folded="pageState.isChatWrapFolded">
-        </TitleLogo>
+        <TitleLogo :chat-title="chatRoomState.chatRoom?.topic" :folded="pageState.isChatWrapFolded" />
         <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="`/static/pfp/${loginState.user?.pfpId}`"
           :folded="pageState.isChatWrapFolded" :loading="pageState.isAwaitingResponse"
           @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }"
-          :transitioned="pageState.isChatWrapTransitioned">
-        </ChatWrap>
-        <InputBox @submit="handleSubmit" v-model="pageState.inputBoxContent"
-          :awaiting-response="pageState.isAwaitingResponse" :animation-playing="pageState.isMsgAnimationPlaying">
-        </InputBox>
+          :transitioned="pageState.isChatWrapTransitioned" />
+        <InputBox @submit="handleSubmit" @stop="handleStop" @file-upload="handleFileUpload"
+          v-model="pageState.inputBoxContent" :awaiting-response="pageState.isAwaitingResponse"
+          :animation-playing="pageState.isMsgAnimationPlaying" />
         <div id="copyright">
           <span>©PibGPT 2024. All rights reserved.</span>
           <span>内容由 AI 大模型生成，请仔细甄别。</span>
@@ -53,6 +51,7 @@
   const pageState = reactive({
     showLoginModal: false,
     showChatRoomListModal: false,
+    showFileUploadModal: false,
     isMsgAnimationPlaying: false,
     isAwaitingResponse: false,
     isChatWrapFolded: true,
@@ -200,9 +199,21 @@
     }
   }
 
+  const handleFileUpload = () => {
+    if (loginState.isLoggedin) {
+      pageState.showFileUploadModal = true;
+    }
+    else {
+      pageState.showLoginModal = true;
+    }
+  }
+
+  const handleStop = () => {
+    pageState.isAwaitingResponse = false;
+  }
+
   const getChatRoomHistory = async (roomId: string) => {
     chatRoomState.chatRoom = null;
-    // pageState.isAwaitingResponse = true;
     try {
       const res = await axios.get<ApiResponse<ChatRoomHistoryFromServer>>(`/api/chatroom/h/${roomId}`, {
         withCredentials: true
