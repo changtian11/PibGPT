@@ -19,14 +19,34 @@
                 </template>
                 <ul class="list-container" v-else>
                     <li class="list-item" v-for="room in chatRoomList" :key="room.roomId">
-                        <a :href="`/${room.roomId}`">
-                            <p class="topic">
-                                {{ room.topic ? room.topic : '无主题对话' }}
-                            </p>
-                            <p class="time">
-                                {{ `上次使用时间：${new Date(room.lastMessageTime).toLocaleString('zh-CN')}` }}
-                            </p>
-                        </a>
+                        <template v-if="room.roomId !== roomId">
+                            <a :href="`/${room.roomId}`">
+                                <p class="topic">
+                                    {{ room.topic ? room.topic : '无主题对话' }}
+                                </p>
+                                <p class="time">
+                                    {{ `上次使用时间：${new Date(room.lastMessageTime).toLocaleString('zh-CN')}` }}
+                                </p>
+                            </a>
+                        </template>
+                        <template v-else>
+                            <a :href="`/${room.roomId}`" @click="handleClickCurrentRoom">
+                                <div class="flagged">
+                                    <p class="topic">
+                                        {{ room.topic ? room.topic : '无主题对话' }}
+                                    </p>
+                                    <div class="current">
+                                        <NIcon>
+                                            <FlagFilled />
+                                        </NIcon>
+                                        <p>当前对话</p>
+                                    </div>
+                                </div>
+                                <p class="time">
+                                    {{ `上次使用时间：${new Date(room.lastMessageTime).toLocaleString('zh-CN')}` }}
+                                </p>
+                            </a>
+                        </template>
                         <div class="options">
                             <NDropdown :options="dropdownOptions" size="large" trigger="click"
                                 @select="(itemKey, _) => handleSelect(itemKey, room.roomId)">
@@ -55,8 +75,23 @@
     import type { ApiResponse, ChatRoomFromServer } from '../../types/types';
     import { NSpin, NIcon, NButton, NDropdown, NEmpty, NAlert, useMessage } from 'naive-ui';
     import type { MessageRenderMessage } from 'naive-ui'
-    import { OverflowMenuVertical, Edit, Delete } from '@vicons/carbon'
+    import { OverflowMenuVertical, Edit, Delete, FlagFilled } from '@vicons/carbon'
+
+    interface Props {
+        roomId: string | null
+    }
+
+    withDefaults(defineProps<Props>(), {
+        roomId: null
+    })
+
     const emit = defineEmits(['cancel', 'room-selected']);
+
+    const handleClickCurrentRoom = (event: Event) => {
+        event.preventDefault();
+        emit('cancel');
+    }
+
     const message = useMessage()
     const chatRoomList = ref<ChatRoomFromServer[]>([]);
     const modalData = reactive({
@@ -144,6 +179,34 @@
 
 </script>
 
-<style>
-    @import "@/stylesheets/modal.css";
+<style scoped>
+    .modal-component .list-item p.topic {
+        font-weight: 800;
+        font-size: large;
+        color: var(--text-primary);
+    }
+
+    .modal-component .list-item .flagged,
+    .modal-component .list-item .current {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        flex-flow: row;
+        align-items: center;
+    }
+
+    .modal-component .list-item .current {
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 500;
+        background-color: var(--accent-color);
+        color: white;
+        border-radius: 0.5rem;
+        margin-left: 1rem;
+        padding: 0.2rem 0.4rem;
+        gap: 2px;
+    }
+
+    .modal-component .list-item p.time {
+        color: var(--text-secondary);
+    }
 </style>
