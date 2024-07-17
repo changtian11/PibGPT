@@ -5,7 +5,8 @@
         @login-success="loginSuccessHandler" />
     </Transition>
     <Transition>
-      <ChatRoomListModal v-if="pageState.showChatRoomListModal" @cancel="pageState.showChatRoomListModal = false" />
+      <ChatRoomListModal v-if="pageState.showChatRoomListModal" @cancel="pageState.showChatRoomListModal = false"
+        :room-id="chatRoomState.chatRoom?.roomId" />
     </Transition>
     <div class="page-container">
       <FloatingMenu @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" @login="pageState.showLoginModal = true"
@@ -17,7 +18,8 @@
         </TitleLogo>
         <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="`/static/pfp/${loginState.user?.pfpId}`"
           :folded="pageState.isChatWrapFolded" :loading="pageState.isAwaitingResponse"
-          @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }">
+          @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }"
+          :transitioned="pageState.isChatWrapTransitioned">
         </ChatWrap>
         <InputBox @submit="handleSubmit" v-model="pageState.inputBoxContent"
           :awaiting-response="pageState.isAwaitingResponse" :animation-playing="pageState.isMsgAnimationPlaying">
@@ -54,7 +56,8 @@
     isMsgAnimationPlaying: false,
     isAwaitingResponse: false,
     isChatWrapFolded: true,
-    inputBoxContent: ""
+    inputBoxContent: "",
+    isChatWrapTransitioned: false
   })
 
   // Page element refs
@@ -200,7 +203,6 @@
   const getChatRoomHistory = async (roomId: string) => {
     chatRoomState.chatRoom = null;
     // pageState.isAwaitingResponse = true;
-    pageState.isChatWrapFolded = false;
     try {
       const res = await axios.get<ApiResponse<ChatRoomHistoryFromServer>>(`/api/chatroom/h/${roomId}`, {
         withCredentials: true
@@ -220,6 +222,7 @@
             ...msg
           }
         });
+        pageState.isChatWrapFolded = false;
       }
     }
     catch (err) {
@@ -288,7 +291,6 @@
     const path = window.location.pathname;
     let urlParam = path !== '/' ? path.substring(1) : null;
     const roomIdReg = new RegExp(/^\d{13}-\d{7}$/)
-    console.log(urlParam)
     await validateLogin();
     if (urlParam) {
       if (loginState.isLoggedin && roomIdReg.test(urlParam)) {
@@ -298,6 +300,7 @@
         window.history.pushState(null, '', '/'); // Remove ID from URL
       }
     }
+    pageState.isChatWrapTransitioned = true;
   });
 
   onBeforeUnmount(() => {
@@ -308,37 +311,26 @@
   });
 </script>
 
+<style>
+  @import "@/stylesheets/modal.css";
+</style>
+
 <style scoped>
   .main-container {
     min-width: 320px;
     width: 95%;
     display: flex;
     height: 100%;
-    padding: 0.1rem 0 0.3rem;
+    padding: 0.1rem 0 2rem;
     background-color: var(--item-color);
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: center;
-    margin-bottom: 2rem;
     transition: margin-bottom .5s ease-out;
   }
 
   .main-container.collapse {
     margin-bottom: 6rem;
-  }
-
-
-  #test-zone {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    z-index: 999;
-    left: 20px;
-    bottom: 20px;
-    border-radius: 8px;
-    border: 3px solid red;
-    padding: 12px;
   }
 
   .chat-item-container:first-child {
@@ -372,8 +364,7 @@
     .main-container {
       max-width: 900px;
       width: 65%;
-      padding: 1rem 12px 0;
-      margin-bottom: 3rem;
+      padding: 1rem 12px 3rem;
     }
 
     .chat-container {
