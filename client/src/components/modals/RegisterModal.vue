@@ -41,10 +41,10 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, reactive, onMounted, onUnmounted, h } from 'vue';
-    import { NInput, NSelect, NButton, NTooltip, NAlert, NUpload, useMessage } from 'naive-ui';
+    import { ref, reactive, h } from 'vue';
+    import { NInput, NSelect, NButton, NAlert, NUpload, useMessage } from 'naive-ui';
     import type { MessageRenderMessage, UploadFileInfo } from 'naive-ui';
-    import type { ApiResponse, User } from '../../types/types';
+    import type { ApiResponse } from '../../types/types';
     import axios from 'axios';
 
     const message = useMessage();
@@ -136,6 +136,4 @@
 
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
