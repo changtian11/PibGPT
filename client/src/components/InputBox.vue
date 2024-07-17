@@ -8,15 +8,9 @@
     })
 
     const modelValue = defineModel()
-
     const emit = defineEmits(
-        ['submit']
+        ['submit', 'file-upload', 'stop']
     )
-
-    const submitText = () => {
-        // Reject blank submission
-        emit('submit');
-    }
 
 </script>
 
@@ -25,13 +19,13 @@
         <div class="input-inner">
             <div class="input-wrap">
                 <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="modelValue"
-                    @keyup.enter="submitText()" :disabled="awaitingResponse || animationPlaying"></input>
+                    @keyup.enter="emit('submit')" :disabled="awaitingResponse || animationPlaying"></input>
             </div>
             <div class="side-buttons">
                 <NTooltip placement="top" trigger="hover" :disabled="awaitingResponse || animationPlaying">
                     <template #trigger>
                         <NButton quaternary :bordered="false" size="large"
-                            :disabled="awaitingResponse || animationPlaying">
+                            :disabled="awaitingResponse || animationPlaying" @click="emit('file-upload')">
                             <template #icon>
                                 <NIcon>
                                     <DocumentAdd />
@@ -43,7 +37,7 @@
                 </NTooltip>
                 <NTooltip v-if="awaitingResponse || animationPlaying" placement="top" trigger="hover">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large" @click="submitText()">
+                        <NButton quaternary :bordered="false" size="large" @click="emit('stop')">
                             <template #icon>
                                 <NIcon>
                                     <Stop />
@@ -55,7 +49,7 @@
                 </NTooltip>
                 <NTooltip v-else placement="top" trigger="hover">
                     <template #trigger>
-                        <NButton quaternary :bordered="false" size="large" @click="submitText()">
+                        <NButton quaternary :bordered="false" size="large" @click="emit('submit')">
                             <template #icon>
                                 <NIcon>
                                     <SendFilled />
