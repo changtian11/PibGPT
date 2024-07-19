@@ -22,16 +22,16 @@ class WebsocketService {
     public joinedRoomId: string | null = null;
 
     connectAndJoinRoom(roomId: string, onOpen: () => void) {
-        const hostname = window.location.hostname;
+        const host = window.location.host;
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         // const port = window.location.port;
-        const port = 3000;
-        let WS_URL;
-        if (!port) {
-            WS_URL = `${protocol}://${hostname}/ws`;
+        let WS_URL: string = '';
+        console.log(import.meta.env.VITE_WS_SERVER_PORT)
+        if (!!import.meta.env.VITE_WS_SERVER_PORT) {
+            WS_URL = `${protocol}://localhost:${import.meta.env.VITE_WS_SERVER_PORT}/ws`
         }
         else {
-            WS_URL = `${protocol}://${hostname}:${port}/ws`;
+            WS_URL = `${protocol}://${host}/ws`
         }
         this.ws = new WebSocket(WS_URL);
         this.ws.onopen = () => {
