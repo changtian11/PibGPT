@@ -113,7 +113,8 @@ const removeExistingFile = async (fileObj) => {
 
 const getPfpByFileId = async (req, res) => {
     const { pfpId } = req.params;
-    if (!pfpId) {
+    console.log(pfpId)
+    if (!pfpId || pfpId === 'undefined') {
         return res.status(400).json({
             success: false,
             message: 'Invalid profile photo id'
@@ -137,7 +138,7 @@ const getPfpByFileId = async (req, res) => {
 
 const getFileByFileId = async (req, res) => {
     const { fileId } = req.params;
-    if (!fileId) {
+    if (!fileId || pfpId === 'undefined') {
         return res.status(400).json({
             success: false,
             message: 'Invalid file id'
