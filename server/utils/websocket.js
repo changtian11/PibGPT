@@ -114,21 +114,21 @@ function setupWebSocket(server) {
                                     }))
                                 }
                             })
+                            break;
                         } catch (error) {
                             ws.send(JSON.stringify({
                                 success: false,
                                 event: 'join',
                                 payload: error.message
                             }));
+                            break;
                         }
-                        break;
                     case 'message':
-                        console.log(parsedMessage);
                         if (!ws.chatRoom) {
                             ws.send(JSON.stringify({
                                 success: false,
                                 event: 'message',
-                                payload: 'Chat room not found'
+                                payload: 'Chat room not joined'
                             }));
                             return;
                         }
@@ -161,6 +161,7 @@ function setupWebSocket(server) {
                                     }));
                                 }
                             });
+                            break;
                         }
                         catch (error) {
                             ws.send(JSON.stringify({
@@ -168,23 +169,25 @@ function setupWebSocket(server) {
                                 event: 'message',
                                 payload: error.message
                             }));
+                            break;
                         }
-                        break;
                     case 'leave':
-                        console.info(`[${ws.user.role}]${ws.user.username} left the chat room [${ws.chatRoom.roomId}].`)
-                        // Notify all online bots.
-                        wss.clients.forEach(client => {
-                            if (client !== ws && client.readyState === WebSocket.OPEN && client.user.role === 'bot') {
-                                client.send(JSON.stringify({
-                                    success: true,
-                                    event: 'user-left',
-                                    payload: {
-                                        roomId: ws.chatRoom.roomId,
-                                        user: ws.user
-                                    }
-                                }))
-                            }
-                        })
+                        if (!!ws.chatRoom) {
+                            console.info(`[${ws.user.role}]${ws.user.username} left the chat room [${ws.chatRoom.roomId}].`)
+                            // Notify all online bots.
+                            wss.clients.forEach(client => {
+                                if (client !== ws && client.readyState === WebSocket.OPEN && client.user.role === 'bot') {
+                                    client.send(JSON.stringify({
+                                        success: true,
+                                        event: 'user-left',
+                                        payload: {
+                                            roomId: ws.chatRoom.roomId,
+                                            user: ws.user
+                                        }
+                                    }))
+                                }
+                            })
+                        }
                         ws.chatRoom = null;
                         ws.send(JSON.stringify({
                             success: true,
@@ -211,6 +214,41 @@ function setupWebSocket(server) {
                             event: 'room-list',
                             payload: onlineChatRoomList
                         }))
+                        break;
+                    case 'update-topic':
+                        if (ws.user.role !== 'bot') {
+                            break;
+                        }
+                        if (!ws.chatRoom) {
+                            ws.send(JSON.stringify({
+                                success: false,
+                                event: 'update-topic',
+                                payload: 'Chat room not joined'
+                            }));
+                            break;
+                        }
+                        try {
+                            const { title } = payload;
+                            ws.chatRoom.updateTopic(title);
+                            await ws.chatRoom.save();
+                            wss.clients.forEach(client => {
+                                if (client.readyState === WebSocket.OPEN) {
+                                    client.send(JSON.stringify({
+                                        event: 'update-topic',
+                                        success: true,
+                                        payload: { title }
+                                    }))
+                                }
+                            })
+                        }
+                        catch (err) {
+                            console.error(err);
+                            ws.send(JSON.stringify({
+                                success: false,
+                                event: 'modify-title',
+                                payload: err.message
+                            }))
+                        }
                         break;
                     default:
                         ws.send(JSON.stringify({

@@ -93,7 +93,7 @@ class WebsocketService {
                     }
                     break;
                 default:
-                    // Client handle other events (user-joined, user-left, message);
+                    // Client handle other events (user-joined, user-left, message, modify-title);
                     if (this.onMessageCb) {
                         this.onMessageCb(message);
                     }
@@ -139,6 +139,18 @@ class WebsocketService {
             }
         }
         if (this.isJoined) this.send(chatMessage);
+    }
+
+    updateTopic(newTitle: string | null | undefined) {
+        console.info(newTitle);
+        if (!!newTitle && newTitle.length > 0) {
+            if (this.isJoined) this.send({
+                event: 'update-topic',
+                payload: {
+                    title: newTitle
+                }
+            } as WsClientMessage<any>)
+        }
     }
 
     joinRoom(roomId: string, onJoinCallback?: () => void) {

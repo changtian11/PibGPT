@@ -300,11 +300,17 @@
           };
           chatMessages.value.push(msgToRender);
           break;
-        case 'user-joined':
-          console.log(`user joined the chat room`);
-          break;
-        case 'user-left':
-          console.log(`user left the chat room`);
+        case 'update-topic':
+          if (message.success) {
+            const newTopic = message.payload.title as string;
+            if (chatRoomState.chatRoom) {
+              chatRoomState.chatRoom.topic = newTopic;
+            }
+          }
+          else {
+
+          }
+
           break;
         default:
           break;

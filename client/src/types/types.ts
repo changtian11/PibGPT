@@ -44,14 +44,14 @@ export enum WsMessageEvent {
 }
 
 export interface WsClientMessage<T> {
-    event: 'join' | 'leave' | 'message' | 'room-list';
+    event: 'join' | 'leave' | 'message' | 'room-list' | 'update-topic';
     payload?: T
 }
 
 
 export interface WsServerMessage<T> {
     success: boolean;
-    event: 'join' | 'leave' | 'user-joined' | 'user-left' | 'connection' | 'message' | 'room-list';
+    event: 'join' | 'leave' | 'user-joined' | 'user-left' | 'connection' | 'message' | 'room-list' | 'update-topic';
     payload?: T
 }
 

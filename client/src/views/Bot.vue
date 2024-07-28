@@ -32,7 +32,7 @@
                         <div class="status-light">
                         </div>
                         <div class="status-text">
-                            与用户对话中
+                            对话中
                         </div>
                     </div>
                     <div class="connected-users">
@@ -54,6 +54,10 @@
                         <NButton @click="leaveRoom">断开聊天</NButton>
                     </div>
                 </div>
+                <div class="title-bar box-shadow-level-one">
+                    <NInput placeholder="无标题" v-model:value="titleBarContent" />
+                    <NButton @click="updateTopic">修改标题</NButton>
+                </div>
                 <ChatWrapper ref="chatWrapRef" :messages="chatMessages"
                     :left-pfp-uri="`/static/pfp/${currentUser?.pfpId}`" :folded="false" :loading="false"
                     :transitioned="false" :show-actions="false" />
@@ -65,9 +69,9 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, reactive, onMounted, onUnmounted } from 'vue';
+    import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
     import type { Ref } from 'vue';
-    import { NButton, NMessageProvider, NAvatar, NTooltip } from 'naive-ui';
+    import { NButton, NMessageProvider, NAvatar, NTooltip, NInput } from 'naive-ui';
     import ChatWrapper from '@/components/ChatWrapper.vue';
     import InputBox from '@/components/InputBox.vue';
     import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
@@ -108,6 +112,7 @@
     const chatRoom: Ref<null | ChatRoomFromServer> = ref(null);
     const currentUser: Ref<null | User> = ref(null);
     const chatMessages: Ref<ChatMessageToRender[]> = ref([]);
+    const titleBarContent = ref("");
 
     const validateLogin = async () => {
         try {
@@ -158,7 +163,13 @@
     }
 
     const handleFileUpload = async () => {
+        //* To-do *//
+    }
 
+    const updateTopic = () => {
+        if (wss.getJoinState()) {
+            wss.updateTopic(titleBarContent.value);
+        }
     }
 
     const getRoomList = () => {
@@ -257,6 +268,17 @@
                         console.info('user has left the current chat room')
                     }
                     break;
+                case 'update-topic':
+                    if (wsMessage.success) {
+                        console.info('updated title');
+                        if (chatRoom.value && chatRoom.value.topic) {
+                            chatRoom.value.topic = wsMessage.payload.title;
+                        }
+                    }
+                    else {
+                        //to-do
+                    }
+                    break;
                 default:
                     break;
 
@@ -264,10 +286,18 @@
         }
     }
 
+    watch(chatRoom, (newVal, oldVal) => {
+        console.log(newVal, oldVal);
+        if (newVal && newVal.topic) {
+            titleBarContent.value = newVal.topic;
+        }
+    }, { immediate: true })
+
     onMounted(async () => {
         await validateLogin();
         wss.onMessage(handleOnWsServerMessage);
         handleWsConnect();
+        getRoomList();
     })
 
     onUnmounted(() => {
@@ -316,7 +346,6 @@
         display: flex;
         flex-flow: row;
         flex-wrap: nowrap;
-        width: 95%;
     }
 
     .connection-status-bar .status {
@@ -371,5 +400,16 @@
     .connected-users>.user {
         cursor: pointer;
         display: flex;
+    }
+
+    .title-bar {
+        background-color: var(--item-bg);
+        border-radius: 1rem;
+        margin: 0.4rem 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        padding: 0.4rem 1rem;
+        text-align: left;
     }
 </style>
