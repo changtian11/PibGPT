@@ -267,7 +267,7 @@ const getChatRoomMessageHistory = async (req, res) => {
                 data: {
                     roomId: chatRoom.roomId,
                     topic: chatRoom.topic,
-                    lassMessageTime: chatRoom.lastMessageTime,
+                    lastMessageTime: chatRoom.lastMessageTime,
                     messages: result
                 }
             })
