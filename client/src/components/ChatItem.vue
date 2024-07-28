@@ -3,6 +3,7 @@
     import { NButton, NTooltip, NIcon } from 'naive-ui';
     import { Copy, Share } from '@vicons/carbon';
     import type { ChatMessageToRender } from '../types/types';
+    import robotGreen from '@/assets/robot-green.png'
 
     interface Props {
         message: ChatMessageToRender;
@@ -13,7 +14,7 @@
 
     const props = withDefaults(defineProps<Props>(), {
         rightPfpUri: "https://picsum.photos/seed/picsum/200",
-        leftPfpUri: "/static/robot-green.png",
+        leftPfpUri: robotGreen,
         showActions: true
     })
     const emit = defineEmits(['animation-playing']);

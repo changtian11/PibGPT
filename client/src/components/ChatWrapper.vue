@@ -15,6 +15,7 @@
     import type { Ref } from 'vue';
     import { ChatMessageToRender } from '../types/types';
     import ChatItem from './ChatItem.vue';
+    import robotGreen from '@/assets/robot-green.png'
 
     interface Props {
         messages: ChatMessageToRender[];
@@ -28,8 +29,8 @@
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        leftPfpUri: "/static/robot-green.png",
-        rightPfpUri: "/static/robot-green.png",
+        leftPfpUri: robotGreen,
+        rightPfpUri: robotGreen,
         folded: true,
         loading: true,
         transitioned: false,

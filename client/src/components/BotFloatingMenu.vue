@@ -21,7 +21,7 @@
                 <NDropdown :options="dropdownOptions" placement="left" size="large" :keyboard="false" trigger="click"
                     style="margin-right: 24px; border-radius: 12px" :arrow-point-to-center="true" :show-arrow="true"
                     @select="handleSelect">
-                    <img id="userPfp" :src="user?.pfpId ? `/static/pfp/${user?.pfpId}` : '/static/robot-green.png'"
+                    <img id="userPfp" :src="user?.pfpId ? `/static/pfp/${user?.pfpId}` : robotGreen"
                         alt="pfp">
                 </NDropdown>
             </div>
@@ -36,6 +36,8 @@
     import { NewTab, DataBackup, DownToBottom, UserProfile, Logout } from '@vicons/carbon';
     import axios from 'axios';
     import type { User, ApiResponse } from '../types/types';
+    import robotGreen from '@/assets/robot-green.png'
+    
 
     interface Props {
         isLoggedIn?: boolean,
@@ -63,7 +65,7 @@
         },
             [h('img', {
                 style: "width: 40x; height: 40px; border-radius: 50%; padding-left: 2px; object-fit: cover; -webkit-user-drag: none",
-                src: props.user?.pfpId ?  `/static/pfp/${props.user?.pfpId}` : '/static/robot-green.png'
+                src: props.user?.pfpId ? `/static/pfp/${props.user?.pfpId}` : robotGreen
             }),
             h('div', {
                 style: 'text-align: left; display: flex; flex-direction: column; flex-wrap: nowrap;padding-right: 4px'

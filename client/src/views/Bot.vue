@@ -41,7 +41,7 @@
                                 <NTooltip placement="bottom" trigger="hover">
                                     <template #trigger>
                                         <NAvatar size="large" round
-                                            :src="room.user.pfpId ? `/static/pfp/${room.user.pfpId}` : '/static/robot-green.png'">
+                                            :src="room.user.pfpId ? `/static/pfp/${room.user.pfpId}` : robotGreen">
                                         </NAvatar>
                                     </template>
                                     {{ `加入${room.user.username}的聊天` }}
@@ -79,6 +79,7 @@
     import wss from '@/services/websocketService';
     import axios from 'axios';
     import type { ApiResponse, ChatMessageFromServer, ChatMessageToRender, ChatRoomFromServer, User, WsServerMessage, ChatRoomHistoryFromServer, WsRoomMessage } from '../types/types';
+    import robotGreen from '@/assets/robot-green.png'
 
     const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrapper>>;
 
