@@ -21,8 +21,7 @@
                 <NDropdown :options="dropdownOptions" placement="left" size="large" :keyboard="false" trigger="click"
                     style="margin-right: 24px; border-radius: 12px" :arrow-point-to-center="true" :show-arrow="true"
                     @select="handleSelect">
-                    <img id="userPfp" :src="user?.pfpId ? `/static/pfp/${user?.pfpId}` : robotGreen"
-                        alt="pfp">
+                    <img id="userPfp" :src="user?.pfpId ? `/static/pfp/${user?.pfpId}` : robotGreen" alt="pfp">
                 </NDropdown>
             </div>
         </div>
@@ -33,11 +32,11 @@
     import { Component, h } from 'vue';
     import { NButton, NTooltip, NIcon, NDropdown, NAlert, useMessage } from 'naive-ui';
     import type { MessageRenderMessage } from 'naive-ui';
-    import { NewTab, DataBackup, DownToBottom, UserProfile, Logout } from '@vicons/carbon';
+    import { DownToBottom, UserProfile, Logout } from '@vicons/carbon';
     import axios from 'axios';
     import type { User, ApiResponse } from '../types/types';
     import robotGreen from '@/assets/robot-green.png'
-    
+
 
     interface Props {
         isLoggedIn?: boolean,

@@ -38,7 +38,7 @@
   import ChatWrapper from '@/components/ChatWrapper.vue';
   import LoginModal from '@/components/modals/LoginModal.vue';
   import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
-  import { ref, onMounted, reactive, h, onBeforeUnmount } from 'vue';
+  import { ref, onMounted, reactive, onBeforeUnmount } from 'vue';
   import type { Ref } from 'vue';
   import type { ApiResponse, ChatMessageFromServer, ChatMessageToRender, ChatRoomFromServer, User, WsServerMessage, ChatRoomHistoryFromServer } from '../types/types';
   import { NMessageProvider } from 'naive-ui';
