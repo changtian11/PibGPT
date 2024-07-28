@@ -16,7 +16,7 @@
     "vue-tsc": "^2.0.21"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite dev",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   }

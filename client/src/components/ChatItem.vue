@@ -5,11 +5,17 @@
     import type { ChatMessageToRender } from '../types/types';
 
     interface Props {
-        message: ChatMessageToRender,
-        userPfpUrl?: string;
+        message: ChatMessageToRender;
+        rightPfpUri?: string;
+        leftPfpUri?: string;
+        showActions?: boolean
     }
 
-    const props = defineProps<Props>();
+    const props = withDefaults(defineProps<Props>(), {
+        rightPfpUri: "https://picsum.photos/seed/picsum/200",
+        leftPfpUri: "/static/robot-green.png",
+        showActions: true
+    })
     const emit = defineEmits(['animation-playing']);
     const animatedText = ref("");
     const isAnimationPlaying = ref(false);
@@ -25,7 +31,7 @@
                 if (index < textLength) {
                     animatedText.value += text[index];
                     index++;
-                    setTimeout(addNextChar, Math.random() * 10 + 20)
+                    setTimeout(addNextChar, Math.random() * 50 + 60)
                 }
                 else {
                     isAnimationPlaying.value = false;
@@ -54,23 +60,23 @@
 
 <template>
     <div class="chat-item">
-        <div v-if="message.role === 'user'" class="message">
+        <div v-if="message.position === 'right'" class="message right">
             <div class="pfp-placeholder"></div>
-            <div class="message-content sender">
+            <div class="message-content">
                 <div class="bubble">
                     <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
                     <div v-else class="text">{{ message.content }}</div>
                 </div>
             </div>
             <div class="pfp">
-                <img :src="props.userPfpUrl" alt="User">
+                <img :src="props.rightPfpUri" alt="头像">
             </div>
         </div>
-        <div v-else class="message">
+        <div v-else-if="message.position === 'left'" class="message left">
             <div class="pfp">
-                <img src="@/assets/robot-green.png" alt="Pib">
+                <img :src="leftPfpUri" alt="Pib">
             </div>
-            <div class="message-content receiver">
+            <div class="message-content">
                 <div class="bubble">
                     <div v-if="message.isLoading" class="loading">
                         <div class="dot"></div>
@@ -81,7 +87,7 @@
                         <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
                         <div v-else-if="message.isAnimated" class="text">{{ animatedText }}</div>
                         <div v-else class="text">{{ message.content }}</div>
-                        <div v-if="!isAnimationPlaying" class="functionButtons">
+                        <div v-if="!isAnimationPlaying && showActions" class="functionButtons">
                             <NTooltip placement="top" trigger="hover" to=".functionButtons">
                                 <template #trigger>
                                     <NButton quaternary :bordered="false" size="small">
@@ -162,11 +168,11 @@
         flex-grow: 1;
     }
 
-    .message-content.sender {
+    .message.right .message-content {
         justify-content: flex-end;
     }
 
-    .message-content.receiver {
+    .message.left .message-content {
         justify-content: flex-start;
     }
 
@@ -266,38 +272,41 @@
         justify-content: flex-end;
     }
 
-    .sender>.bubble {
+    .message.right .bubble {
         color: var(--sender-text-color);
         background-color: var(--sender-bg);
+        text-wrap: wrap;
+        word-break: break-word;
+        white-space: pre-wrap;
     }
 
-    .sender>.bubble:before {
+    .message.right .bubble:before {
         right: -7px;
         width: 20px;
         background-color: var(--sender-bg);
         border-bottom-left-radius: 16px 14px;
     }
 
-    .sender>.bubble:after {
+    .message.right .bubble:after {
         right: -26px;
         width: 26px;
         background-color: var(--page-bg);
         border-bottom-left-radius: 10px;
     }
 
-    .receiver>.bubble {
+    .message.left .bubble {
         color: var(--receiver-text-color);
         background-color: var(--receiver-bg);
     }
 
-    .receiver>.bubble:before {
+    .message.left .bubble:before {
         left: -7px;
         width: 20px;
         background-color: var(--receiver-bg);
         border-bottom-right-radius: 16px 14px;
     }
 
-    .receiver>.bubble:after {
+    .message.left .bubble:after {
         left: -26px;
         width: 26px;
         background-color: var(--page-bg);

@@ -19,8 +19,8 @@
                 </template>
                 <ul class="list-container" v-else>
                     <li class="list-item" v-for="room in chatRoomList" :key="room.roomId">
-                        <template v-if="room.roomId !== roomId">
-                            <a :href="`/${room.roomId}`">
+                        <template v-if="room.roomId !== currentRoomId">
+                            <a :href="`${props.baseUrl}${room.roomId}`">
                                 <p class="topic">
                                     {{ room.topic ? room.topic : '无主题对话' }}
                                 </p>
@@ -30,7 +30,7 @@
                             </a>
                         </template>
                         <template v-else>
-                            <a :href="`/${room.roomId}`" @click="handleClickCurrentRoom">
+                            <a :href="`${baseUrl}${room.roomId}`" @click="handleClickCurrentRoom">
                                 <div class="flagged">
                                     <p class="topic">
                                         {{ room.topic ? room.topic : '无主题对话' }}
@@ -78,11 +78,13 @@
     import { OverflowMenuVertical, Edit, Delete, FlagFilled } from '@vicons/carbon'
 
     interface Props {
-        roomId: string | null
+        currentRoomId?: string | null,
+        baseUrl?: string
     }
 
-    withDefaults(defineProps<Props>(), {
-        roomId: null
+    const props = withDefaults(defineProps<Props>(), {
+        currentRoomId: null,
+        baseUrl: '/'
     })
 
     const emit = defineEmits(['cancel', 'room-selected']);
@@ -165,7 +167,7 @@
             const res = await axios.get<ApiResponse<ChatRoomFromServer[]>>('/api/chatroom/list');
             if (res.data.success) {
                 chatRoomList.value = res.data.data;
-                modalData.isLoading = false;
+                modalData.isLoading = false
             }
         }
         catch (err) {

@@ -14,7 +14,7 @@ const authenticate = async (token) => {
             throw new Error('Blacklisted token');
         }
         const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(decoded.userId, 'nickname username profilePhoto role _id');
         if (!user) {
             throw new Error('User not found')
         }
@@ -66,6 +66,11 @@ function setupWebSocket(server) {
             }))
         }
         catch (err) {
+            ws.send(JSON.stringify({
+                event: 'connection',
+                success: false,
+                payload: `${err.message}`
+            }))
             ws.close(1008, 'User not found');
             return;
         }
@@ -80,7 +85,7 @@ function setupWebSocket(server) {
                     case 'join':
                         const { roomId } = payload;
                         try {
-                            if (!roomId) {
+                            if (!roomId || roomId === 'undefined') {
                                 throw new Error('Room ID invalid')
                             }
                             const chatRoom = await authorizeUser(ws.user, roomId);
@@ -90,7 +95,25 @@ function setupWebSocket(server) {
                                 event: 'join',
                                 payload: roomId
                             }));
-                            console.info(`User [${ws.user.username}] joined the chat room.`)
+                            console.info(`[${ws.user.role}]${ws.user.username} joined the chat room [${roomId}].`)
+                            // Notify all online bots.
+                            wss.clients.forEach(client => {
+                                if (client.readyState === WebSocket.OPEN && client.user.role === 'bot') {
+                                    client.send(JSON.stringify({
+                                        success: true,
+                                        event: 'user-joined',
+                                        payload: {
+                                            roomId: roomId,
+                                            user: {
+                                                nickname: ws.user.nickname,
+                                                username: ws.user.username,
+                                                pfpId: ws.user.profilePhoto,
+                                                role: ws.user.role
+                                            }
+                                        }
+                                    }))
+                                }
+                            })
                         } catch (error) {
                             ws.send(JSON.stringify({
                                 success: false,
@@ -124,7 +147,7 @@ function setupWebSocket(server) {
                             await ws.chatRoom.save();
 
                             // Broadcast the message to all clients in the same chat room
-                            wss.clients.forEach((client) => {
+                            wss.clients.forEach(client => {
                                 if (client.readyState === WebSocket.OPEN && client.chatRoom && client.chatRoom.roomId === ws.chatRoom.roomId) {
                                     client.send(JSON.stringify({
                                         success: true,
@@ -148,11 +171,46 @@ function setupWebSocket(server) {
                         }
                         break;
                     case 'leave':
+                        console.info(`[${ws.user.role}]${ws.user.username} left the chat room [${ws.chatRoom.roomId}].`)
+                        // Notify all online bots.
+                        wss.clients.forEach(client => {
+                            if (client !== ws && client.readyState === WebSocket.OPEN && client.user.role === 'bot') {
+                                client.send(JSON.stringify({
+                                    success: true,
+                                    event: 'user-left',
+                                    payload: {
+                                        roomId: ws.chatRoom.roomId,
+                                        user: ws.user
+                                    }
+                                }))
+                            }
+                        })
                         ws.chatRoom = null;
                         ws.send(JSON.stringify({
                             success: true,
                             event: 'leave'
                         }));
+                        break;
+                    case 'room-list':
+                        const onlineChatRoomList = [];
+                        wss.clients.forEach(client => {
+                            if (client.chatRoom && client.user.role === 'user') {
+                                onlineChatRoomList.push({
+                                    roomId: client.chatRoom.roomId,
+                                    user: {
+                                        nickname: client.user.nickname,
+                                        username: client.user.username,
+                                        pfpId: client.user.profilePhoto,
+                                        role: client.user.role
+                                    }
+                                })
+                            }
+                        })
+                        ws.send(JSON.stringify({
+                            success: true,
+                            event: 'room-list',
+                            payload: onlineChatRoomList
+                        }))
                         break;
                     default:
                         ws.send(JSON.stringify({
@@ -171,7 +229,23 @@ function setupWebSocket(server) {
         });
 
         ws.on('close', () => {
-            ws.chatRoom = null;
+            if (!!ws.chatRoom) {
+                console.info(`User [${ws.user.username}] left the chat room [${ws.chatRoom.roomId}].`)
+                // Notify all online bots.
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN && client.user.role === 'bot') {
+                        client.send(JSON.stringify({
+                            success: true,
+                            event: 'user-left',
+                            payload: {
+                                roomId: ws.chatRoom.roomId,
+                                user: ws.user
+                            }
+                        }))
+                    }
+                });
+                ws.chatRoom = null;
+            }
             ws.close(1001, 'Ws closed')
         });
     });

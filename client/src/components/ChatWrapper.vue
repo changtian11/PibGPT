@@ -1,11 +1,11 @@
 <template>
-    <div class="chat-container" id="chat-container" :class="{ folded: folded, transitioned: transitioned }"
-        ref="chatContainerRef">
-        <ChatItem v-for="message in props.messages" :message="message" :user-pfp-url="userPfpUrl"
-            :key="message.timestamp" @animation-playing="emitAnimationState">
+    <div class="chat-wrapper-component" :class="{ folded: folded, transitioned: transitioned }" ref="chatContainerRef">
+        <ChatItem v-for="message in props.messages" :message="message" :right-pfp-uri="rightPfpUri"
+            :key="message.timestamp" @animation-playing="emitAnimationState" :left-pfp-uri="leftPfpUri"
+            :show-actions="showActions">
         </ChatItem>
         <Transition>
-            <ChatItem v-if="loading" :message="botLoadingMsg"> </ChatItem>
+            <ChatItem v-if="awaitingLeftResponse" :message="botLoadingMsg"> </ChatItem>
         </Transition>
     </div>
 </template>
@@ -17,16 +17,24 @@
     import ChatItem from './ChatItem.vue';
 
     interface Props {
-        messages: ChatMessageToRender[],
-        userPfpUrl?: string,
-        folded?: boolean,
-        loading: boolean,
-        transitioned: boolean
+        messages: ChatMessageToRender[];
+        folded?: boolean;
+        loading?: boolean;
+        transitioned: boolean;
+        leftPfpUri?: string;
+        rightPfpUri?: string;
+        awaitingLeftResponse?: boolean;
+        showActions?: boolean;
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        userPfpUrl: "https://picsum.photos/seed/picsum/200",
-        transitioned: false
+        leftPfpUri: "/static/robot-green.png",
+        rightPfpUri: "/static/robot-green.png",
+        folded: true,
+        loading: true,
+        transitioned: false,
+        awaitingLeftResponse: false,
+        showActions: true
     });
 
     const botLoadingMsg: ChatMessageToRender = {
@@ -35,7 +43,8 @@
         isAnimated: false,
         content: '',
         role: 'bot',
-        timestamp: ''
+        timestamp: '',
+        position: 'left'
     }
 
     const emit = defineEmits(['update-messages', 'animation-playing'])
@@ -75,7 +84,7 @@
 </script>
 
 <style scope>
-    .chat-container {
+    .chat-wrapper-component {
         display: flex;
         flex-grow: 1;
         flex-shrink: 1;
@@ -89,17 +98,25 @@
         overflow-x: hidden;
     }
 
-    .chat-container.transitioned {
+    .chat-wrapper-component.transitioned {
         transition: all 1s ease-out;
     }
 
-    .chat-container.folded {
+    .chat-wrapper-component.folded {
         opacity: 0;
         flex-grow: 0;
         max-height: 0;
     }
 
-    .chat-container::-webkit-scrollbar {
+    .chat-wrapper-component::-webkit-scrollbar {
         display: none;
+    }
+
+    @media screen and (min-width: 600px) {
+
+        .chat-wrapper-component {
+            padding: 0 12px 1rem;
+        }
+
     }
 </style>

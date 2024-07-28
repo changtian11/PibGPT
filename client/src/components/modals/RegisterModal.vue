@@ -135,5 +135,8 @@
     }
 
 </script>
+<style>
+    @import "@/stylesheets/modal.css";
+</style>
 
 <style scoped></style>

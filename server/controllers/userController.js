@@ -84,15 +84,11 @@ const loginUser = async (req, res) => {
             expiresIn: '14d'
         });
         res.cookie('token', token, { httpOnly: true });
-        if (user.role === 'bot') {
-            res.redirect('/bot');
-        } else {
-            res.send({
-                success: true,
-                code: 200,
-                message: 'Login succeed'
-            });
-        }
+        res.send({
+            success: true,
+            code: 200,
+            message: 'Login succeed'
+        });
     }
     catch (err) {
         console.error(err);

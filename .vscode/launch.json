@@ -34,6 +34,25 @@
                 "uriFormat": "http://localhost:%s",
                 "action": "openExternally"
             }
+        },
+        {
+            "name": "Dev Client (In-Progess)",
+            "type": "chrome",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/client",
+            "runtimeExecutable": "node",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "pattern": "http://localhost:([0-9]+)",
+                "uriFormat": "http://localhost:%s",
+                "action": "openExternally"
+            },
+            "preLaunchTask": "npm: dev-client",
+            "webRoot": "${workspaceFolder}/client",
+            "skipFiles": [
+                "${workspaceFolder}/client/node_modules/**/*.js"
+            ],
+            "sourceMaps": true
         }
     ],
     "compounds": [

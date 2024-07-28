@@ -9,6 +9,7 @@ export interface ChatMessageFromServer extends ChatMessage {
 export interface ChatMessageToRender extends ChatMessageFromServer {
     isLoading: boolean; // Indicates if the message is loading
     isAnimated: boolean; // Indicates if the message should be animated
+    position: 'left' | 'right';
 }
 export interface ChatRoomFromServer {
     roomId: string,
@@ -32,8 +33,29 @@ export interface ApiResponse<T> {
     code?: number;
 }
 
-export interface WsServerMessage<T> {
-    success: boolean,
-    event: string,
+export enum WsMessageEvent {
+    Join,
+    Leave,
+    UserJoined,
+    UserLeft,
+    Connection,
+    Message,
+    GetRoom
+}
+
+export interface WsClientMessage<T> {
+    event: 'join' | 'leave' | 'message' | 'room-list';
     payload?: T
+}
+
+
+export interface WsServerMessage<T> {
+    success: boolean;
+    event: 'join' | 'leave' | 'user-joined' | 'user-left' | 'connection' | 'message' | 'room-list';
+    payload?: T
+}
+
+export interface WsRoomMessage {
+    roomId: string;
+    user: User
 }

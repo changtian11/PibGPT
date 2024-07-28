@@ -1,33 +1,29 @@
-import type { ChatMessage, ChatMessageFromServer, WsServerMessage } from "@/types/types";
+import type { ChatMessage, WsClientMessage, WsRoomMessage, WsServerMessage } from "@/types/types";
 
-interface Message<T> {
-    event: 'join' | 'leave' | 'message';
-    payload?: T;
-}
-
-interface JoinMessage {
-    roomId: string
-}
-
-type MessageCallback = (message: ChatMessageFromServer | null) => void;
+type MessageCallback = (message: WsServerMessage<any> | null) => void;
 type ErrorCallback = (error: Event | null) => void;
+type WsErrorCallback = (errorMessage: string | null) => void;
+type getRoomListCallback = (roomList: WsRoomMessage[] | null) => void;
 
 class WebsocketService {
     private ws: WebSocket | null = null;
-    private onMessageCallback: MessageCallback | null = null;
-    private onErrorCallback: ErrorCallback | null = null;
-    private onJoinCallback: (() => void) | null = null;
+    private onConnectionSuccessCb: (() => void) | null = null;
+    private onConnectionFailCb: WsErrorCallback | null = null;
+    private onJoinCb: (() => void) | null = null;
+    private onMessageCb: MessageCallback | null = null;
+    private onErrorCb: ErrorCallback | null = null;
+    private onGetRoomListCb: getRoomListCallback | null = null;
     private isReady: boolean = false;
-    public isJoined: boolean = false;
-    public joinedRoomId: string | null = null;
+    private isJoined: boolean = false;
+    private joinedRoomId: string | null = null;
 
-    connectAndJoinRoom(roomId: string, onOpen: () => void) {
+    connect(onSuccessCb: (() => void) | null, onFailCb: ((error: string | null) => void) | null) {
+        this.onConnectionSuccessCb = onSuccessCb;
+        this.onConnectionFailCb = onFailCb;
         const host = window.location.host;
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        // const port = window.location.port;
         let WS_URL: string = '';
-        console.log(import.meta.env.VITE_WS_SERVER_PORT)
-        if (!!import.meta.env.VITE_WS_SERVER_PORT) {
+        if (import.meta.env.MODE === 'development') {
             WS_URL = `${protocol}://localhost:${import.meta.env.VITE_WS_SERVER_PORT}/ws`
         }
         else {
@@ -35,21 +31,26 @@ class WebsocketService {
         }
         this.ws = new WebSocket(WS_URL);
         this.ws.onopen = () => {
-            console.log('WebSocket connection established');
-            if (onOpen) {
-                onOpen();
-            }
+            console.log('WebSocket connection open');
         };
 
         this.ws.onmessage = (event: MessageEvent) => {
-            const message: WsServerMessage<any> = JSON.parse(event.data);
-            console.log('Server-side message:')
-            console.log(message);
+            const message = JSON.parse(event.data) as WsServerMessage<any>;
+            console.log('Server-side message: ', message)
             switch (message.event) {
                 case 'connection':
+                    this.isReady = message.success;
                     if (message.success) {
-                        this.isReady = true;
-                        this.joinRoom(roomId);
+                        if (this.onConnectionSuccessCb) {
+                            console.log('WebSocket bilateral connection established');
+                            this.onConnectionSuccessCb();
+                        }
+                    }
+                    else {
+                        console.error('WebSocket connection failed');
+                        if (this.onConnectionFailCb) {
+                            this.onConnectionFailCb(message.payload);
+                        }
                     }
                     break;
                 case 'join':
@@ -57,8 +58,8 @@ class WebsocketService {
                         console.info(`Joined room [${message.payload}]`);
                         this.isJoined = true;
                         this.joinedRoomId = message.payload;
-                        if (this.onJoinCallback) {
-                            this.onJoinCallback();
+                        if (this.onJoinCb) {
+                            this.onJoinCb();
                         }
                     }
                     else {
@@ -77,9 +78,24 @@ class WebsocketService {
                         console.error(`Failed to leave room: ${message.payload}`);
                     }
                     break;
+                case 'room-list':
+                    if (message.success) {
+                        const roomList = message.payload as WsRoomMessage[];
+                        console.info(`Availble rooms: ${roomList.length}`);
+                        if (this.onGetRoomListCb) {
+                            this.onGetRoomListCb(roomList);
+                        }
+                    }
+                    else {
+                        if (this.onGetRoomListCb) {
+                            this.onGetRoomListCb(null);
+                        }
+                    }
+                    break;
                 default:
-                    if (this.onMessageCallback) {
-                        this.onMessageCallback(message.payload);
+                    // Client handle other events (user-joined, user-left, message);
+                    if (this.onMessageCb) {
+                        this.onMessageCb(message);
                     }
             }
         };
@@ -93,14 +109,19 @@ class WebsocketService {
 
         this.ws.onerror = (error: Event) => {
             console.error('WebSocket error:', error);
-            if (this.onErrorCallback) {
-                this.onErrorCallback(error);
+            this.isReady = false;
+            if (this.onErrorCb) {
+                this.onErrorCb(error);
             }
         };
     }
 
-    send(message: Message<any>) {
-        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+    send(message: WsClientMessage<any>) {
+        console.log('Client sent: ', message);
+        // if (this.ws && this.ws.readyState === this.ws.OPEN) {
+        //     this.ws.send(JSON.stringify(message));
+        // }
+        if (this.ws && this.isReady) {
             this.ws.send(JSON.stringify(message));
         }
         else {
@@ -110,7 +131,7 @@ class WebsocketService {
     }
 
     sendChatMessage(content: string) {
-        const chatMessage: Message<ChatMessage> = {
+        const chatMessage: WsClientMessage<ChatMessage> = {
             event: 'message',
             payload: {
                 type: 'text',
@@ -121,9 +142,9 @@ class WebsocketService {
     }
 
     joinRoom(roomId: string, onJoinCallback?: () => void) {
-        this.onJoinCallback = onJoinCallback || null;
+        this.onJoinCb = onJoinCallback || null;
         console.log(`Joining the room [${roomId}]`);
-        const joinMessage: Message<JoinMessage> = {
+        const joinMessage: WsClientMessage<{ roomId: string }> = {
             event: 'join',
             payload: {
                 roomId
@@ -133,15 +154,35 @@ class WebsocketService {
     }
 
     leaveRoom() {
-        this.send({ event: 'leave', payload: {} });
+        const leaveMsg: WsClientMessage<null> = {
+            event: 'leave'
+        }
+        this.send(leaveMsg);
     }
 
     onMessage(callback: MessageCallback) {
-        this.onMessageCallback = callback;
+        this.onMessageCb = callback;
     }
 
-    getWsState() {
+    getWsConnectionState() {
         return this.isReady;
+    }
+
+    getJoinState() {
+        return this.isJoined;
+    }
+
+    getJoinedRoomId() {
+        return this.joinedRoomId;
+    }
+
+    getRoomList(onSuccessCb: getRoomListCallback) {
+        if (!!onSuccessCb) {
+            this.onGetRoomListCb = onSuccessCb;
+        }
+        this.send({
+            event: 'room-list'
+        })
     }
 
     close() {

@@ -6,7 +6,7 @@
     </Transition>
     <Transition>
       <ChatRoomListModal v-if="pageState.showChatRoomListModal" @cancel="pageState.showChatRoomListModal = false"
-        :room-id="chatRoomState.chatRoom?.roomId" />
+        :current-room-id="chatRoomState.chatRoom?.roomId" />
     </Transition>
     <div class="page-container">
       <FloatingMenu @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" @login="pageState.showLoginModal = true"
@@ -15,10 +15,10 @@
         :allow-new-chat-btn="chatRoomState.chatRoom !== null" />
       <div class="main-container" :class="{ folded: pageState.isChatWrapFolded }">
         <TitleLogo :chat-title="chatRoomState.chatRoom?.topic" :folded="pageState.isChatWrapFolded" />
-        <ChatWrap ref="chatWrapRef" :messages="chatMessages" :user-pfp-url="`/static/pfp/${loginState.user?.pfpId}`"
-          :folded="pageState.isChatWrapFolded" :loading="pageState.isAwaitingResponse"
+        <ChatWrapper ref="chatWrapRef" :messages="chatMessages" :right-pfp-uri="`/static/pfp/${loginState.user?.pfpId}`"
+          :folded="pageState.isChatWrapFolded" :awaiting-left-response="pageState.isAwaitingResponse"
           @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }"
-          :transitioned="pageState.isChatWrapTransitioned" />
+          :transitioned="pageState.isChatWrapTransitioned" :loading="pageState.isPageLoading" />
         <InputBox @submit="handleSubmit" @stop="handleStop" @file-upload="handleFileUpload"
           v-model="pageState.inputBoxContent" :awaiting-response="pageState.isAwaitingResponse"
           :animation-playing="pageState.isMsgAnimationPlaying" />
@@ -35,14 +35,13 @@
   import FloatingMenu from '@/components/FloatingMenu.vue';
   import InputBox from '@/components/InputBox.vue';
   import TitleLogo from '@/components/TitleLogo.vue';
-  import ChatWrap from '@/components/ChatWrapper.vue';
+  import ChatWrapper from '@/components/ChatWrapper.vue';
   import LoginModal from '@/components/modals/LoginModal.vue';
   import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
   import { ref, onMounted, reactive, h, onBeforeUnmount } from 'vue';
   import type { Ref } from 'vue';
   import type { ApiResponse, ChatMessageFromServer, ChatMessageToRender, ChatRoomFromServer, User, WsServerMessage, ChatRoomHistoryFromServer } from '../types/types';
-  import { NMessageProvider, NAlert, useMessage } from 'naive-ui';
-  import type { MessageRenderMessage } from 'naive-ui'
+  import { NMessageProvider } from 'naive-ui';
   import wss from '@/services/websocketService';
   import axios from 'axios';
 
@@ -55,12 +54,13 @@
     isMsgAnimationPlaying: false,
     isAwaitingResponse: false,
     isChatWrapFolded: true,
+    isPageLoading: true,
     inputBoxContent: "",
     isChatWrapTransitioned: false
   })
 
   // Page element refs
-  const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrap>>
+  const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrapper>>;
 
   // Chat model
   interface LoginState {
@@ -93,6 +93,7 @@
         withCredentials: true
       });
       if (res.data.success) {
+        if (res.data.data.role === 'bot') window.location.href = 'bot.html';
         loginState.isLoggedin = true;
         loginState.user = res.data.data;
       }
@@ -121,17 +122,18 @@
 
   const wsConnectAndJoinRoom = async () => {
     try {
-      if (wss.isJoined && chatRoomState.chatRoom && chatRoomState.chatRoom!.roomId === wss.joinedRoomId) { return; }
+      if (wss.getJoinState() && chatRoomState.chatRoom && chatRoomState.chatRoom!.roomId === wss.getJoinedRoomId()) { return; }
 
       if (!chatRoomState.chatRoom) {
         await getNewChatRoom();
       }
       const roomId = chatRoomState.chatRoom!.roomId;
-      if (wss.getWsState()) {
-        if (wss.isJoined && roomId === wss.joinedRoomId) {
+      console.log(roomId);
+      if (wss.getWsConnectionState()) {
+        if (wss.getJoinState() && roomId === wss.getJoinedRoomId()) {
           return;
         }
-        if (wss.isJoined) wss.leaveRoom();
+        if (wss.getJoinState()) wss.leaveRoom();
         wss.joinRoom(roomId, () => {
           chatRoomState.isWsConnected = true;
           console.log('Joined room successfully');
@@ -139,12 +141,12 @@
       }
       else {
         chatRoomState.isWsConnected = false;
-        wss.connectAndJoinRoom(roomId, () => {
+        wss.connect(() => {
           chatRoomState.isWsConnected = true;
           wss.joinRoom(roomId, () => {
             console.log('Joined room successfully');
           });
-        })
+        }, null)
       }
       window.history.pushState(null, '', `/${chatRoomState.chatRoom?.roomId}`);
     }
@@ -157,8 +159,7 @@
   const waitForReady = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       const checkInterval = setInterval(() => {
-        console.log(wss.isJoined);
-        if (wss.isJoined) {
+        if (wss.getJoinState()) {
           clearInterval(checkInterval);
           resolve();
         }
@@ -230,6 +231,7 @@
           return {
             isAnimated: false,
             isLoading: false,
+            position: msg.role === 'bot' ? 'left' : 'right',
             ...msg
           }
         });
@@ -273,36 +275,50 @@
     window.history.pushState(null, '', '/');
   }
 
-  const handleOnMessage = (message: ChatMessageFromServer | null) => {
+  const handleOnMessage = (message: WsServerMessage<any> | null) => {
     if (message) {
-      console.log(message)
-      let chatMessageToRender: ChatMessageToRender | null = null;
-      if (message.role === 'bot') {
-        pageState.isAwaitingResponse = false;
-        chatMessageToRender = {
-          isAnimated: true,
-          isLoading: false,
-          ...message
-        };
+      switch (message.event) {
+        case 'message':
+          const msg = message.payload as ChatMessageFromServer;
+          let msgToRender: ChatMessageToRender | null = null;
+          if (msg.role === 'bot') {
+            pageState.isAwaitingResponse = false;
+            msgToRender = {
+              isAnimated: true,
+              isLoading: false,
+              position: 'left',
+              ...msg
+            }
+          }
+          else {
+            msgToRender = {
+              isAnimated: false,
+              isLoading: false,
+              position: 'right',
+              ...msg
+            }
+          };
+          chatMessages.value.push(msgToRender);
+          break;
+        case 'user-joined':
+          console.log(`user joined the chat room`);
+          break;
+        case 'user-left':
+          console.log(`user left the chat room`);
+          break;
+        default:
+          break;
       }
-      else {
-        chatMessageToRender = {
-          isAnimated: false,
-          isLoading: false,
-          ...message
-        }
-      }
-      chatMessages.value.push(chatMessageToRender);
     }
   }
 
-  wss.onMessage(handleOnMessage);
 
   onMounted(async () => {
     const path = window.location.pathname;
     let urlParam = path !== '/' ? path.substring(1) : null;
-    const roomIdReg = new RegExp(/^\d{13}-\d{7}$/)
+    const roomIdReg = new RegExp(/^\d{13}-\d{7}$/);
     await validateLogin();
+    wss.onMessage(handleOnMessage);
     if (urlParam) {
       if (loginState.isLoggedin && roomIdReg.test(urlParam)) {
         await getChatRoomHistory(urlParam);
@@ -315,7 +331,7 @@
   });
 
   onBeforeUnmount(() => {
-    if (wss.isJoined) {
+    if (wss.getJoinState()) {
       wss.leaveRoom();
     }
     wss.close();
@@ -344,14 +360,6 @@
     margin-bottom: 6rem;
   }
 
-  .chat-item-container:first-child {
-    margin: 0;
-  }
-
-  .chat-item-container:last-child {
-    margin-bottom: 1rem;
-  }
-
   #copyright {
     display: none;
     margin-top: 8px;
@@ -376,10 +384,6 @@
       max-width: 900px;
       width: 65%;
       padding: 1rem 12px 3rem;
-    }
-
-    .chat-container {
-      padding: 0 12px;
     }
 
     #copyright {

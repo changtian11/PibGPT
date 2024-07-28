@@ -11,7 +11,7 @@ router.get('/:roomId?', (req, res) => {
 })
 
 router.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'register.html'));
+    res.sendFile(path.resolve(__dirname, '..', 'public', 'register.html'));
 });
 
 router.get('/bot/:roomId?', (req, res) => {

@@ -4,6 +4,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -33,6 +34,7 @@ export default defineConfig({
         register: path.resolve(__dirname, 'register.html'),
         bot: path.resolve(__dirname, 'bot.html')
       }
-    }
+    },
+    sourcemap: true
   }
 })

@@ -2,9 +2,16 @@
     import { NButton, NTooltip, NIcon } from 'naive-ui';
     import { SendFilled, DocumentAdd, Stop } from '@vicons/carbon';
 
-    defineProps({
-        awaitingResponse: Boolean,
-        animationPlaying: Boolean
+    interface Props {
+        awaitingResponse: boolean,
+        animationPlaying: boolean,
+        placeholder?: string
+    }
+
+    withDefaults(defineProps<Props>(), {
+        awaitingResponse: false,
+        animationPlaying: false,
+        placeholder: "输入你想了解的信息吧！"
     })
 
     const modelValue = defineModel()
@@ -18,7 +25,7 @@
     <div class="input-container box-shadow-level-one hoverable">
         <div class="input-inner">
             <div class="input-wrap">
-                <input id="input-box" type="text" placeholder="输入你想了解的信息吧！" v-model="modelValue"
+                <input id="input-box" type="text" :placeholder="placeholder" v-model="modelValue"
                     @keyup.enter="emit('submit')" :disabled="awaitingResponse || animationPlaying"></input>
             </div>
             <div class="side-buttons">
