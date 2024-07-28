@@ -10,10 +10,12 @@ const { setupWebSocket } = require('./utils/websocket');
 const app = express();
 const server = http.createServer(app);
 
+const PORT = process.env.PORT || 3000;
+
 // Middleware setup
 app.use(cors(
     {
-        origin: 'http://localhost:3000',
+        origin: `http://localhost:${PORT}`,
         optionsSuccessStatus: 200
     }
 ))
