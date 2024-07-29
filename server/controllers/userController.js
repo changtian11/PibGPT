@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET;
+const config = require('../utils/config');
+const JWT_SECRET = config.get("JWT_SECRET");
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
 const BlacklistedToken = require('../models/blacklistedTokenModel');

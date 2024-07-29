@@ -7,7 +7,6 @@ const chatCtl = require('../controllers/chatController');
 
 const uploadMiddleware = require('../middleware/uploadMiddleware');
 const authMiddleware = require('../middleware/authMiddleware');
-const adminAuthMiddleware = require('../middleware/adminAuthMiddleware');
 
 
 // User register and login

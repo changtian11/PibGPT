@@ -7,6 +7,7 @@ const uploadDirPath = path.resolve(serverDataRootPath, 'uploads');
 const tempDirPath = path.resolve(uploadDirPath, 'temp');
 const pfpDirPath = path.resolve(uploadDirPath, 'profilePhoto');
 
+
 const allowedAttachmentExts = {
     image: ['jpg', 'jpeg', 'png', 'gif', 'ico'],
     audio: ['mp3', 'wav', 'aac', 'ogg'],

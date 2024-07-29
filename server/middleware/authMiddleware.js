@@ -15,7 +15,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const BlacklistedToken = require('../models/blacklistedTokenModel');
-const JWT_SECRET = process.env.JWT_SECRET;
+const config = require('../utils/config');
+const JWT_SECRET = config.get("JWT_SECRET");
 
 const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token;

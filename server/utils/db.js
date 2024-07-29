@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
+const config = require('./config');
+const MONGODB_PWD = config.get('MONGODB_PWD');
+const MONGODB_DBNAME = config.get('MONGODB_DBNAME');
 
-const MONGODB_URI = () => `mongodb+srv://pibgpt-admin:${encodeURIComponent(process.env.MONGODB_PWD)}@cluster0.udocai0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+const MONGODB_URI = () => `mongodb+srv://pibgpt-admin:${encodeURIComponent(MONGODB_PWD)}@cluster0.udocai0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGODB_URI(), {
-            dbName: process.env.MONGODB_DBNAME
+            dbName: MONGODB_DBNAME
         });
     }
     catch (error) {
