@@ -10,7 +10,8 @@
         "dev": "",
         "dev-client": "npm run --workspace client dev",
         "dev-server": "npm run --workspace client dev",
-        "build-client": "npm run --workspace client build"
+        "build-client": "npm run --workspace client build",
+        "build-server": "npm run --workspace server build"
     },
     "devDependencies": {
         "path": "^0.12.7"
