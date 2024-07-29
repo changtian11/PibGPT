@@ -12,7 +12,7 @@
             "runtimeExecutable": "${workspaceFolder}/server/node_modules/nodemon/bin/nodemon.js",
             "restart": true,
             "cwd": "${workspaceFolder}/server",
-            "envFile": "${workspaceFolder}/server/.env",
+            "envFile": "${workspaceFolder}/server/.env.development",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
