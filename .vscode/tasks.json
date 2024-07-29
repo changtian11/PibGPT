@@ -8,6 +8,31 @@
 			"label": "npm: dev-client",
 			"detail": "npm run --workspace client dev",
 			"isBackground": true
+		},
+		{
+			"type": "npm",
+			"script": "build-client",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "npm: build-client",
+			"detail": "npm run --workspace client build"
+		},
+		{
+			"type": "npm",
+			"script": "build-server",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "npm: build-server",
+			"detail": "npm run --workspace server build",
+			"dependsOn": [
+				"npm: build-client"
+			]
 		}
 	]
 }
