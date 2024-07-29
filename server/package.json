@@ -15,5 +15,25 @@
   "devDependencies": {
     "nodemon": "^3.1.4"
   },
-  "type": "commonjs"
+  "type": "commonjs",
+  "name": "pbigpt-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "Jas0n2K",
+  "bin": "server.js",
+  "pkg": {
+    "outputPath": "dist",
+    "assets": [
+      "public/**/*",
+      "node_modules/**/*",
+      "config/**/*"
+    ],
+    "targets": [
+      "latest-win-x64",
+      "latest-macos-arm64"
+    ]
+  },
+  "scripts": {
+    "build": "pkg . --compress"
+  }
 }
