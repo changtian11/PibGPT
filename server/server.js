@@ -2,7 +2,7 @@
 const app = require('./app');
 const { createUploadDirs } = require('./utils/fileUtil')
 const { connectDB } = require('./utils/db');
-
+console.info(`Launching PbiGPT server.`);
 createUploadDirs();
 connectDB();
 
