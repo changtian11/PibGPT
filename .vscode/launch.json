@@ -20,12 +20,59 @@
             "internalConsoleOptions": "neverOpen",
         },
         {
+            "name": "Dev Server Win",
+            "type": "node",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}\\server\\server.js",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [],
+            "restart": true,
+            "cwd": "${workspaceFolder}\\server",
+            "envFile": "${workspaceFolder}\\server\\.env.development",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "pattern": "Server is listening on port ([0-9]+)",
+                "uriFormat": "http://localhost:%s",
+                "action": "openExternally"
+            }
+        },
+        {
             "name": "Dev Client",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/client/node_modules/vite/bin/vite.js",
             "cwd": "${workspaceFolder}/client",
             "runtimeExecutable": "node",
+            "args": [
+                "--config vite.config.dev.ts"
+            ],
+            "envFile": "${workspaceFolder}/client/.env",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "pattern": "http://localhost:([0-9]+)",
+                "uriFormat": "http://localhost:%s",
+                "action": "openExternally"
+            }
+        },
+        {
+            "name": "Dev Client Win",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}\\client",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "vite",
+                "--config",
+                ".\\vite.config.dev.ts"
+            ],
             "envFile": "${workspaceFolder}/client/.env",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
@@ -61,6 +108,13 @@
             "configurations": [
                 "Dev Server",
                 "Dev Client"
+            ]
+        },
+        {
+            "name": "Dev All (Win)",
+            "configurations": [
+                "Dev Client Win",
+                "Dev Server Win"
             ]
         }
     ]

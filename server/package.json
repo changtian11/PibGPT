@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -29,8 +29,7 @@
       "config/**/*"
     ],
     "targets": [
-      "latest-win-x64",
-      "latest-macos-arm64"
+      "latest-win-x64"
     ]
   },
   "scripts": {

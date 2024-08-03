@@ -11,17 +11,32 @@ export default defineConfig({
       '@': '/src'
     }
   },
+  server: {
+    port: 4000,
+    strictPort: true,
+    proxy:  {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/static': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  },
   build: {
     outDir: path.join(__dirname, '..', 'server', 'public'),
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        index: path.resolve(__dirname, 'index.html'),
+        main: path.resolve(__dirname, 'index.html'),
         register: path.resolve(__dirname, 'register.html'),
         bot: path.resolve(__dirname, 'bot.html')
       }
     },
-    sourcemap: true,
-    assetsDir:"./assets"
+    sourcemap: true
   }
 })
