@@ -62,7 +62,6 @@
                     </li>
                 </ul>
             </template>
-
         </div>
         <div class="dim-bg" @click="emit('cancel')">
         </div>
@@ -182,21 +181,21 @@
 </script>
 
 <style scoped>
-    .modal-component .list-item p.topic {
+    .chat-room-list-modal .list-item p.topic {
         font-weight: 800;
         font-size: large;
         color: var(--text-primary);
     }
 
-    .modal-component .list-item .flagged,
-    .modal-component .list-item .current {
+    .chat-room-list-modal .list-item .flagged,
+    .chat-room-list-modal .list-item .current {
         display: inline-flex;
         flex-wrap: nowrap;
         flex-flow: row;
         align-items: center;
     }
 
-    .modal-component .list-item .current {
+    .chat-room-list-modal .list-item .current {
         font-size: 12px;
         line-height: 16px;
         font-weight: 500;
@@ -208,7 +207,7 @@
         gap: 2px;
     }
 
-    .modal-component .list-item p.time {
+    .chat-room-list-modal .list-item p.time {
         color: var(--text-secondary);
     }
 </style>
