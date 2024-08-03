@@ -12,6 +12,14 @@
     --accent-color: #208320;
     --highlight-color: #29a829;
     --active-color: #175e17;
+    --transparent-bg: rgba(70, 70, 70, 0.6);
+}
+
+/**
+    Font Color
+**/
+:root {
     --text-primary: black;
-    --text-secondary: #4d4256;
+    --text-secondary: #3a3a3a;
+    --text-accent: #208320;
 }
