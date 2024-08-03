@@ -1,6 +1,6 @@
 <script setup lang="ts">
-    import { ref, watch } from 'vue';
-    import { NButton, NTooltip, NIcon } from 'naive-ui';
+    import { ref, watch, h } from 'vue';
+    import { NButton, NTooltip, NIcon, useMessage, NAlert } from 'naive-ui';
     import { Copy, Share } from '@vicons/carbon';
     import type { ChatMessageToRender } from '../types/types';
     import robotGreen from '@/assets/robot-green.png'
@@ -20,6 +20,47 @@
     const emit = defineEmits(['animation-playing']);
     const animatedText = ref("");
     const isAnimationPlaying = ref(false);
+
+    const messageAlert = useMessage();
+
+    const handleCopy = async (content: string) => {
+        console.info(content);
+        try {
+            await navigator.clipboard.writeText(content);
+            messageAlert.success('已将消息复制到剪切板', {
+                render: (props) => h(NAlert, {
+                    type: 'success',
+                    closable: true,
+                    title: '已复制',
+                    style: {
+                        maxWidth: 'calc(100vw - 32px)',
+                        width: '480px',
+                        'user-select': 'none'
+                    }
+                }, {
+                    default: () => props.content
+                })
+            })
+        }
+        catch (err) {
+            console.error(err);
+            messageAlert.error('无法写入剪切板', {
+                render: (props) => h(NAlert, {
+                    type: 'error',
+                    closable: true,
+                    title: '复制失败',
+                    style: {
+                        maxWidth: 'calc(100vw - 32px)',
+                        width: '480px',
+                        'user-select': 'none'
+                    }
+                }, {
+                    default: () => props.content
+                })
+            }
+            )
+        }
+    }
 
     const typeWriterEffect = () => {
         if (!props.message.isAnimated) return;
@@ -43,7 +84,7 @@
     }
 
     watch(isAnimationPlaying, (newVal, oldVal) => {
-        if (newVal && !oldVal) {
+        if (newVal === true && oldVal === false) {
             emit('animation-playing', true);
         }
         else {
@@ -91,7 +132,8 @@
                         <div v-if="!isAnimationPlaying && showActions" class="functionButtons">
                             <NTooltip placement="top" trigger="hover" to=".functionButtons">
                                 <template #trigger>
-                                    <NButton quaternary :bordered="false" size="small">
+                                    <NButton quaternary :bordered="false" size="small"
+                                        @click="handleCopy(message.content)">
                                         <template #icon>
                                             <NIcon :size="18">
                                                 <Copy />
