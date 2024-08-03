@@ -2,14 +2,14 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const serverDataRootPath = path.resolve(os.homedir(), 'pibgpt-server');
-console.log('Server root data path: ' + serverDataRootPath)
+// console.log('Server root data path: ' + serverDataRootPath)
 const uploadDirPath = path.resolve(serverDataRootPath, 'uploads');
 const tempDirPath = path.resolve(uploadDirPath, 'temp');
 const pfpDirPath = path.resolve(uploadDirPath, 'profilePhoto');
 
 
 const allowedAttachmentExts = {
-    image: ['jpg', 'jpeg', 'png', 'gif', 'ico'],
+    image: ['jpg', 'jpeg', 'png', 'gif', 'ico', 'bmp'],
     audio: ['mp3', 'wav', 'aac', 'ogg'],
     video: ['mp4', 'm4v', 'webm', 'avi', 'wmv', '3gp'],
     document: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'],
@@ -56,6 +56,8 @@ const isAllowedFileExts = (filename, filePurpose = 'att') => {
     }
     else return false;
 }
+
+const getAllowedFileExts = () => Object.values(allowedAttachmentExts).flat().includes(fileExtension);
 
 /**
  * Asynchronously create directories for various types of files.
@@ -127,5 +129,6 @@ module.exports = {
     getFileType,
     isAllowedFileExts,
     moveFile,
-    deleteFile
+    deleteFile,
+    getAllowedFileExts
 }
