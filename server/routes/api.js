@@ -19,7 +19,6 @@ router.post('/profile/pfp', authMiddleware, userCtl.updateUserPfp);
 router.get('/logout', authMiddleware, userCtl.logoutUser)
 router.post('/upload', authMiddleware, uploadMiddleware, fileCtl.uploadFile);
 
-
 // Chat-related
 router.get('/chatroom/create', authMiddleware, chatCtl.createChatRoom);
 router.post('/chatroom/upload', authMiddleware, uploadMiddleware, fileCtl.uploadFileToChat);
@@ -28,6 +27,9 @@ router.get('/chatroom/h/:roomId?', authMiddleware, chatCtl.getChatRoomMessageHis
 router.delete('/chatroom/del/:roomId', authMiddleware, chatCtl.deleteChatRoomById);
 router.delete('/chatroom/empty', authMiddleware, chatCtl.deleteEmptyChatRooms);
 router.delete('/chatroom/all', authMiddleware, chatCtl.deleteAllChatRooms);
+
+// File
+router.get('/allowed-file-ext', fileCtl.getAllowedExts);
 
 
 module.exports = router;

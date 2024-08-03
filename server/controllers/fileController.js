@@ -1,5 +1,5 @@
 const File = require('../models/fileModel');
-const { moveFile, deleteFile, getFileType } = require('../utils/fileUtil');
+const { moveFile, deleteFile, getFileType, getAllowedFileExts } = require('../utils/fileUtil');
 const { ResErrorConstructor } = require('../utils/errorHandler');
 
 const uploadFile = async (req, res) => {
@@ -158,11 +158,19 @@ const getFileByFileId = async (req, res) => {
     }
 }
 
+const getAllowedExts = async (req, res) => {
+    return res.json({
+        success: true,
+        content: getAllowedFileExts()
+    })
+}
+
 module.exports = {
     uploadFile,
     uploadFileToChat,
     createAndMoveFile,
     removeExistingFile,
     getPfpByFileId,
-    getFileByFileId
+    getFileByFileId,
+    getAllowedExts
 }
