@@ -1,5 +1,5 @@
 <template>
-  <NMessageProvider>
+  <NMessageProvider placement="top">
     <Transition>
       <LoginModal v-if="pageState.showLoginModal" @cancel="pageState.showLoginModal = false"
         @login-success="loginSuccessHandler" />
@@ -7,6 +7,11 @@
     <Transition>
       <ChatRoomListModal v-if="pageState.showChatRoomListModal" @cancel="pageState.showChatRoomListModal = false"
         :current-room-id="chatRoomState.chatRoom?.roomId" />
+    </Transition>
+    <Transition>
+      <FileUploadModal ref="fileUploadModalRef" v-if="pageState.showFileUploadModal"
+        @cancel="pageState.showFileUploadModal = false" @upload="handleUpload"
+        :uploading-file="pageState.uploadingFileState" />
     </Transition>
     <div class="page-container">
       <FloatingMenu @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" @login="pageState.showLoginModal = true"
@@ -19,7 +24,7 @@
           :folded="pageState.isChatWrapFolded" :awaiting-left-response="pageState.isAwaitingResponse"
           @animation-playing="(state: boolean) => { pageState.isMsgAnimationPlaying = state }"
           :transitioned="pageState.isChatWrapTransitioned" :loading="pageState.isPageLoading" />
-        <InputBox @submit="handleSubmit" @stop="handleStop" @file-upload="handleFileUpload"
+        <InputBox @submit="handleSubmit" @stop="handleStopGenerating" @file-upload="showFileUploadModal"
           v-model="pageState.inputBoxContent" :awaiting-response="pageState.isAwaitingResponse"
           :animation-playing="pageState.isMsgAnimationPlaying" />
         <div id="copyright">
@@ -38,6 +43,7 @@
   import ChatWrapper from '@/components/ChatWrapper.vue';
   import LoginModal from '@/components/modals/LoginModal.vue';
   import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
+  import FileUploadModal from '@/components/modals/FileUploadModal.vue';
   import { ref, onMounted, reactive, onBeforeUnmount } from 'vue';
   import type { Ref } from 'vue';
   import type { ApiResponse, ChatMessageFromServer, ChatMessageToRender, ChatRoomFromServer, User, WsServerMessage, ChatRoomHistoryFromServer } from '../types/types';
@@ -53,6 +59,10 @@
     showFileUploadModal: false,
     isMsgAnimationPlaying: false,
     isAwaitingResponse: false,
+    uploadingFileState: {
+      isUploading: false,
+      error: null
+    },
     isChatWrapFolded: true,
     isPageLoading: true,
     inputBoxContent: "",
@@ -61,6 +71,7 @@
 
   // Page element refs
   const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrapper>>;
+  const fileUploadModalRef = ref() as Ref<InstanceType<typeof FileUploadModal>>;
 
   // Chat model
   interface LoginState {
@@ -93,7 +104,7 @@
         withCredentials: true
       });
       if (res.data.success) {
-        if (res.data.data.role === 'bot') window.location.href = 'bot.html';
+        if (res.data.data.role === 'bot') window.location.href = 'bot';
         loginState.isLoggedin = true;
         loginState.user = res.data.data;
       }
@@ -200,7 +211,31 @@
     }
   }
 
-  const handleFileUpload = () => {
+  const handleUpload = async (fileToUpload: File | null) => {
+    if (!loginState.isLoggedin) {
+      pageState.showLoginModal = true;
+      return;
+    }
+
+    if (!fileToUpload) return;
+
+    console.log(fileToUpload);
+    pageState.uploadingFileState = {
+      isUploading: true,
+      error: null
+    };
+
+    setTimeout(() => {
+      pageState.uploadingFileState = {
+        isUploading: false,
+        error: null
+      },
+        setTimeout(() => { pageState.showFileUploadModal = false; }, 200);
+    }, 3000)
+
+  }
+
+  const showFileUploadModal = () => {
     if (loginState.isLoggedin) {
       pageState.showFileUploadModal = true;
     }
@@ -209,7 +244,7 @@
     }
   }
 
-  const handleStop = () => {
+  const handleStopGenerating = () => {
     pageState.isAwaitingResponse = false;
   }
 
