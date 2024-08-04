@@ -105,7 +105,7 @@
         }
         try {
             const { username, password, nickname, profilePhoto, role } = regForm;
-            const res = await axios.post<ApiResponse<undefined>>('/api/register',
+            const regRes = await axios.post<ApiResponse<undefined>>('/api/register',
                 {
                     username, password, nickname, role,
                     filePurpose: 'pfp',
@@ -117,8 +117,8 @@
                     }
                 }
             )
-            console.log(res);
-            if (res.data.success) {
+            console.log(regRes);
+            if (regRes.data.success) {
                 message.success('快去登录吧！', {
                     type: "success",
                     keepAliveOnHover: false,

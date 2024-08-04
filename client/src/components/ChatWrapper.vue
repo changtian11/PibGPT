@@ -61,14 +61,6 @@
 
     const emitAnimationState = (state: boolean) => emit('animation-playing', state);
 
-    // watch(isAnimationPlaying, (newVal) => {
-    //     if (newVal) {
-    //         while (isAnimationPlaying.value) {
-    //             containerScrollToBottom();
-    //         }
-    //     }
-    // })
-
     onMounted(() => {
         scrollToBottom();
         if (chatContainerRef.value) {
