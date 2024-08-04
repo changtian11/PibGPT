@@ -15,9 +15,8 @@ router.post('/login', userCtl.loginUser);
 
 // Privileged actions 
 router.get('/auth', authMiddleware, userCtl.authenticateUser)
-router.post('/profile/pfp', authMiddleware, userCtl.updateUserPfp);
+router.post('/profile/pfp', authMiddleware, uploadMiddleware, userCtl.updateUserPfp);
 router.get('/logout', authMiddleware, userCtl.logoutUser)
-router.post('/upload', authMiddleware, uploadMiddleware, fileCtl.uploadFile);
 
 // Chat-related
 router.get('/chatroom/create', authMiddleware, chatCtl.createChatRoom);
