@@ -50,7 +50,7 @@
     import { NButton, NIcon, NAlert, useMessage } from 'naive-ui';
     import type { MessageReactive } from 'naive-ui';
     import { Upload } from '@vicons/carbon';
-    import { reactive, ref, watch, computed, onBeforeUnmount, h, Prop } from 'vue';
+    import { reactive, ref, watch, computed, onBeforeUnmount, h } from 'vue';
     const emit = defineEmits(['cancel', 'upload']);
 
     interface Props {

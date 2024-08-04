@@ -203,12 +203,20 @@
                 withCredentials: true
             })
 
-            pageState.uploadingFileState = {
-                isUploading: false,
-                error: null
+            if (uploadRes.data.success) {
+                pageState.uploadingFileState = {
+                    isUploading: false,
+                    error: null
+                }
+
+                pageState.showFileUploadModal = false;
             }
 
-            pageState.showFileUploadModal = false;
+            else {
+                throw new Error(`Upload failed: ${uploadRes.data.message}`)
+            }
+
+
         } catch (err) {
             console.error(err);
             pageState.uploadingFileState = {

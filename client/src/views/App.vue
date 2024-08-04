@@ -252,19 +252,24 @@
         withCredentials: true
       })
 
-      console.log(uploadRes);
+      if (uploadRes.data.success) {
+        pageState.isChatWrapFolded = false;
+        setTimeout(() => {
+          pageState.isAwaitingResponse = true;
+        }, 500)
 
-      pageState.isChatWrapFolded = false;
-      setTimeout(() => {
-        pageState.isAwaitingResponse = true;
-      }, 500)
+        pageState.uploadingFileState = {
+          isUploading: false,
+          error: null
+        }
 
-      pageState.uploadingFileState = {
-        isUploading: false,
-        error: null
+        pageState.showFileUploadModal = false;
       }
 
-      pageState.showFileUploadModal = false;
+      else {
+        throw new Error(`Upload failed: ${uploadRes.data.message}`)
+      }
+
     } catch (err) {
       console.error(err);
       pageState.uploadingFileState = {
