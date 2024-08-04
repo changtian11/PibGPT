@@ -5,7 +5,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
-const { setupWebSocket } = require('./utils/websocket');
+const wss = require('./utils/websocket');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.static(path.join('public')));
 app.use('/', routes);
-
-app.locals.wss = setupWebSocket(server);
+wss.initializer(server);
+app.locals.wss = wss;
 
 module.exports = server;

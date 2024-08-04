@@ -52,8 +52,23 @@
   import axios from 'axios';
 
 
-  // Page State
-  const pageState = reactive({
+  interface PageState {
+    showLoginModal: boolean,
+    showChatRoomListModal: boolean,
+    showFileUploadModal: boolean,
+    isMsgAnimationPlaying: boolean,
+    isAwaitingResponse: boolean,
+    uploadingFileState: {
+      isUploading: boolean,
+      error: string | null
+    },
+    isChatWrapFolded: boolean,
+    isPageLoading: boolean,
+    inputBoxContent: string | null,
+    isChatWrapTransitioned: boolean
+  }
+
+  const pageState = reactive<PageState>({
     showLoginModal: false,
     showChatRoomListModal: false,
     showFileUploadModal: false,
@@ -71,7 +86,6 @@
 
   // Page element refs
   const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrapper>>;
-  const fileUploadModalRef = ref() as Ref<InstanceType<typeof FileUploadModal>>;
 
   // Chat model
   interface LoginState {
@@ -225,14 +239,39 @@
       error: null
     };
 
-    setTimeout(() => {
+    try {
+      await wsConnectAndJoinRoom();
+      await waitForReady();
+      const uploadRes = await axios.post<ApiResponse<undefined>>('/api/chatroom/upload', {
+        file: fileToUpload,
+        roomId: chatRoomState.chatRoom?.roomId
+      }, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true
+      })
+
+      console.log(uploadRes);
+
+      pageState.isChatWrapFolded = false;
+      setTimeout(() => {
+        pageState.isAwaitingResponse = true;
+      }, 500)
+
       pageState.uploadingFileState = {
         isUploading: false,
         error: null
-      },
-        setTimeout(() => { pageState.showFileUploadModal = false; }, 200);
-    }, 3000)
+      }
 
+      pageState.showFileUploadModal = false;
+    } catch (err) {
+      console.error(err);
+      pageState.uploadingFileState = {
+        isUploading: false,
+        error: 'Upload failed'
+      }
+    }
   }
 
   const showFileUploadModal = () => {
@@ -318,11 +357,21 @@
           let msgToRender: ChatMessageToRender | null = null;
           if (msg.role === 'bot') {
             pageState.isAwaitingResponse = false;
-            msgToRender = {
-              isAnimated: true,
-              isLoading: false,
-              position: 'left',
-              ...msg
+            if (msg.type === 'text') {
+              msgToRender = {
+                isAnimated: true,
+                isLoading: false,
+                position: 'left',
+                ...msg
+              }
+            }
+            else {
+              msgToRender = {
+                isAnimated: false,
+                isLoading: false,
+                position: 'left',
+                ...msg
+              }
             }
           }
           else {
@@ -352,7 +401,6 @@
       }
     }
   }
-
 
   onMounted(async () => {
     const path = window.location.pathname;

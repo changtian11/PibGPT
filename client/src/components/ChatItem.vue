@@ -106,7 +106,7 @@
             <div class="pfp-placeholder"></div>
             <div class="message-content">
                 <div class="bubble">
-                    <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
+                    <img v-if="message.type === 'file'" class="image" :src="`/static/file/${message.content}`"></img>
                     <div v-else class="text">{{ message.content }}</div>
                 </div>
             </div>
@@ -126,7 +126,8 @@
                         <div class="dot"></div>
                     </div>
                     <div v-else>
-                        <img v-if="message.type === 'file'" class="image" :src="message.content"></img>
+                        <img v-if="message.type === 'file'" class="image"
+                            :src="`/static/file/${message.content}`"></img>
                         <div v-else-if="message.isAnimated" class="text">{{ animatedText }}</div>
                         <div v-else class="text">{{ message.content }}</div>
                         <div v-if="!isAnimationPlaying && showActions" class="functionButtons">

@@ -24,7 +24,7 @@ class WebsocketService {
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         let WS_URL: string = '';
         if (import.meta.env.MODE === 'development') {
-            WS_URL = `${protocol}://localhost:${import.meta.env.VITE_WS_SERVER_PORT}/ws`
+            WS_URL = `${protocol}://localhost:${import.meta.env.VITE_SERVER_PORT}/ws`
         }
         else {
             WS_URL = `${protocol}://${host}/ws`

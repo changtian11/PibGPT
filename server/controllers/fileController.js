@@ -1,5 +1,8 @@
 const File = require('../models/fileModel');
 const { moveFile, deleteFile, getFileType, getAllowedFileExts } = require('../utils/fileUtil');
+const ChatRoom = require('../models/chatRoomModel');
+const ChatMessage = require('../models/chatMessageModel');
+const wss = require('../utils/websocket');
 const { ResErrorConstructor } = require('../utils/errorHandler');
 
 const uploadFile = async (req, res) => {
@@ -31,9 +34,9 @@ const uploadFile = async (req, res) => {
 
 const uploadFileToChat = async (req, res) => {
     const { userId, role } = req.user;
-    const file = req.file;
+    const { roomId } = req.body;
 
-    if (!file) {
+    if (!req.file) {
         return res.status(400).json({
             success: false,
             message: 'No file uploaded',
@@ -52,7 +55,7 @@ const uploadFileToChat = async (req, res) => {
     }
 
     else if (role === 'user') {
-        const isUserInRoom = chatRoom.users.some((roomUser) => roomUser._id.equals(user._id));
+        const isUserInRoom = chatRoom.users.some((roomUser) => roomUser._id.equals(roomUser._id));
         if (!isUserInRoom) {
             return res.status(401).json({
                 success: false,
@@ -62,11 +65,7 @@ const uploadFileToChat = async (req, res) => {
         }
     }
 
-    const newFile = new File({
-        filename: file.filename,
-        fileType,
-    });
-    await newFile.save();
+    const newFile = await createAndMoveFile(req.file.filename, null);
 
     const newChatMessage = new ChatMessage({
         type: 'file',
@@ -78,11 +77,12 @@ const uploadFileToChat = async (req, res) => {
     chatRoom.addMessage(newChatMessage._id);
     await chatRoom.save();
 
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN && client.chatRoom && client.chatRoom.roomId === roomId) {
-            client.send(JSON.stringify(newChatMessage));
-        }
-    });
+    wss.broadcastToChatRoom(roomId, {
+        type: 'file',
+        sender: userId,
+        content: newFile._id,
+        role
+    })
 
     return res.json({
         success: true,
@@ -166,7 +166,6 @@ const getAllowedExts = async (req, res) => {
 }
 
 module.exports = {
-    uploadFile,
     uploadFileToChat,
     createAndMoveFile,
     removeExistingFile,

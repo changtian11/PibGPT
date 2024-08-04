@@ -1,7 +1,12 @@
 <template>
     <NMessageProvider>
         <Transition>
-            <ChatRoomListModal v-if="pageState.showChatRoomListModal" />
+            <ChatRoomListModal v-if="pageState.showChatRoomListModal"
+                @cancel="pageState.showChatRoomListModal = false" />
+        </Transition>
+        <Transition>
+            <FileUploadModal v-if="pageState.showFileUploadModal" @cancel="pageState.showFileUploadModal = false"
+                @upload="handleUpload" :uploading-file="pageState.uploadingFileState" />
         </Transition>
         <div class="page-container">
             <BotFloatingMenu :user="loginState.user" @scroll-to-bottom="chatWrapRef.scrollToBottom(true)" />
@@ -61,8 +66,9 @@
                 <ChatWrapper ref="chatWrapRef" :messages="chatMessages"
                     :left-pfp-uri="`/static/pfp/${currentUser?.pfpId}`" :folded="false" :loading="false"
                     :transitioned="false" :show-actions="false" />
-                <InputBox @submit="handleSubmit" @file-upload="handleFileUpload" v-model="pageState.inputBoxContent"
-                    :awaiting-response="false" :animation-playing="false" placeholder="回复信息" />
+                <InputBox @submit="handleSubmit" @file-upload="pageState.showFileUploadModal = true"
+                    v-model="pageState.inputBoxContent" :awaiting-response="false" :animation-playing="false"
+                    placeholder="回复信息" />
             </div>
         </div>
     </NMessageProvider>
@@ -75,6 +81,7 @@
     import ChatWrapper from '@/components/ChatWrapper.vue';
     import InputBox from '@/components/InputBox.vue';
     import ChatRoomListModal from '@/components/modals/ChatRoomListModal.vue';
+    import FileUploadModal from '@/components/modals/FileUploadModal.vue';
     import BotFloatingMenu from '@/components/BotFloatingMenu.vue';
     import wss from '@/services/websocketService';
     import axios from 'axios';
@@ -83,10 +90,26 @@
 
     const chatWrapRef = ref() as Ref<InstanceType<typeof ChatWrapper>>;
 
-    const pageState = reactive({
+    interface PageState {
+        showChatRoomListModal: boolean,
+        showFileUploadModal: boolean,
+        inputBoxContent: string,
+        autoJoin: boolean,
+        uploadingFileState: {
+            isUploading: boolean,
+            error: string | null
+        }
+    }
+
+    const pageState = reactive<PageState>({
         showChatRoomListModal: false,
+        showFileUploadModal: false,
         inputBoxContent: '',
-        autoJoin: true
+        autoJoin: true,
+        uploadingFileState: {
+            isUploading: false,
+            error: null
+        }
     })
 
     interface LoginState {
@@ -107,9 +130,7 @@
     }
 
     const chatRoomList: Ref<WsRoomMessage[]> = ref([]);
-
     const connectionState: Ref<wsConnectionState> = ref(wsConnectionState.CLOSE);
-
     const chatRoom: Ref<null | ChatRoomFromServer> = ref(null);
     const currentUser: Ref<null | User> = ref(null);
     const chatMessages: Ref<ChatMessageToRender[]> = ref([]);
@@ -163,8 +184,38 @@
         }
     }
 
-    const handleFileUpload = async () => {
-        //* To-do *//
+    const handleUpload = async (fileToUpload: File | null) => {
+        if (!fileToUpload) return;
+        if (connectionState.value !== wsConnectionState.JOINED_ROOM) return;
+        pageState.uploadingFileState = {
+            isUploading: true,
+            error: null
+        };
+
+        try {
+            const uploadRes = await axios.post<ApiResponse<undefined>>('/api/chatroom/upload', {
+                file: fileToUpload,
+                roomId: chatRoom.value?.roomId
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
+            })
+
+            pageState.uploadingFileState = {
+                isUploading: false,
+                error: null
+            }
+
+            pageState.showFileUploadModal = false;
+        } catch (err) {
+            console.error(err);
+            pageState.uploadingFileState = {
+                isUploading: false,
+                error: 'Upload failed'
+            }
+        }
     }
 
     const updateTopic = () => {
@@ -286,6 +337,8 @@
             }
         }
     }
+
+
 
     watch(chatRoom, (newVal, oldVal) => {
         console.log(newVal, oldVal);
