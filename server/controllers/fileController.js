@@ -1,11 +1,11 @@
-const File = require('../models/fileModel');
-const { moveFile, deleteFile, getFileType, getAllowedFileExts } = require('../utils/fileUtil');
-const ChatRoom = require('../models/chatRoomModel');
-const ChatMessage = require('../models/chatMessageModel');
-const wss = require('../utils/websocket');
-const { ResErrorConstructor } = require('../utils/errorHandler');
+import File from '../models/fileModel.js';
+import ChatRoom from '../models/chatRoomModel.js';
+import ChatMessage from '../models/chatMessageModel.js';
+import wss from '../utils/websocket.js';
+import { moveFile, deleteFile, getFileType, getAllowedFileExts } from '../utils/fileUtil.js';
+import { ResErrorConstructor } from '../utils/errorHandler.js';
 
-const uploadFile = async (req, res) => {
+export const uploadFile = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -32,7 +32,7 @@ const uploadFile = async (req, res) => {
     }
 }
 
-const uploadFileToChat = async (req, res) => {
+export const uploadFileToChat = async (req, res) => {
     const { userId, role } = req.user;
     const { roomId } = req.body;
 
@@ -90,7 +90,7 @@ const uploadFileToChat = async (req, res) => {
     })
 }
 
-const createAndMoveFile = async (filename, forceFileType) => {
+export const createAndMoveFile = async (filename, forceFileType) => {
     let fileType = null;
     if (forceFileType) {
         fileType = forceFileType
@@ -104,14 +104,14 @@ const createAndMoveFile = async (filename, forceFileType) => {
     return newFile;
 }
 
-const removeExistingFile = async (fileObj) => {
+export const removeExistingFile = async (fileObj) => {
     await deleteFile(fileObj.filename, fileObj.fileType);
     await File.findByIdAndDelete(fileObj._id, {}, (err, x) => {
         if (err) throw err
     });
 }
 
-const getPfpByFileId = async (req, res) => {
+export const getPfpByFileId = async (req, res) => {
     const { pfpId } = req.params;
     if (!pfpId || pfpId === 'undefined' || pfpId === 'null') {
         return res.status(400).json({
@@ -135,7 +135,7 @@ const getPfpByFileId = async (req, res) => {
     }
 }
 
-const getFileByFileId = async (req, res) => {
+export const getFileByFileId = async (req, res) => {
     const { fileId } = req.params;
     if (!fileId || fileId === 'undefined' || fileId === 'null') {
         return res.status(400).json({
@@ -158,18 +158,9 @@ const getFileByFileId = async (req, res) => {
     }
 }
 
-const getAllowedExts = async (req, res) => {
+export const getAllowedExts = async (req, res) => {
     return res.json({
         success: true,
         content: getAllowedFileExts()
     })
-}
-
-module.exports = {
-    uploadFileToChat,
-    createAndMoveFile,
-    removeExistingFile,
-    getPfpByFileId,
-    getFileByFileId,
-    getAllowedExts
 }

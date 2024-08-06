@@ -5,20 +5,21 @@
  * 
  * @module authMiddleware
  * @author Jas0n2K
- * @version 0.0.1
+ * @version 0.0.2
  * 
  * @requires jsonwebtoken
  * @requires userModel
  * @requires blacklistedTokenModel
  */
 
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
-const BlacklistedToken = require('../models/blacklistedTokenModel');
-const config = require('../utils/config');
-const JWT_SECRET = config.get("JWT_SECRET");
+import jwt from 'jsonwebtoken';
+import config from '../utils/config.js';
 
-const authMiddleware = async (req, res, next) => {
+import User from '../models/userModel.js';
+import BlacklistedToken from '../models/blacklistedTokenModel.js';
+
+
+export default async (req, res, next) => {
     const token = req.cookies.token;
 
     if (!token) {
@@ -39,7 +40,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     try {
-        const decoded = await jwt.verify(token, JWT_SECRET);
+        const decoded = await jwt.verify(token, config.get("JWT_SECRET"));
         const user = await User.findById(decoded.userId);
         if (!user) {
             return res.clearCookie('token').json({
@@ -67,5 +68,3 @@ const authMiddleware = async (req, res, next) => {
         })
     }
 }
-
-module.exports = authMiddleware;

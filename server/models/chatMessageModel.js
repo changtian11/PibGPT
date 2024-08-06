@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const chatMessageSchema = new mongoose.Schema({
     type: { type: String, enum: ['text', 'file'], required: true },
@@ -7,5 +7,4 @@ const chatMessageSchema = new mongoose.Schema({
     file: { type: mongoose.Schema.Types.ObjectId, ref: 'File', required: false }
 },
     { timestamps: true });
-
-module.exports = mongoose.model('ChatMessage', chatMessageSchema);
+export default mongoose.model('ChatMessage', chatMessageSchema);

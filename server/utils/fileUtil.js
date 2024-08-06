@@ -1,14 +1,14 @@
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-const serverDataRootPath = path.resolve(os.homedir(), 'pibgpt-server');
-// console.log('Server root data path: ' + serverDataRootPath)
-const uploadDirPath = path.resolve(serverDataRootPath, 'uploads');
-const tempDirPath = path.resolve(uploadDirPath, 'temp');
-const pfpDirPath = path.resolve(uploadDirPath, 'profilePhoto');
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs';
+
+export const serverDataRootPath = path.resolve(os.homedir(), 'pibgpt-server');
+export const uploadDirPath = path.resolve(serverDataRootPath, 'uploads');
+export const tempDirPath = path.resolve(uploadDirPath, 'temp');
+export const pfpDirPath = path.resolve(uploadDirPath, 'profilePhoto');
 
 
-const allowedAttachmentExts = {
+export const allowedAttachmentExts = {
     image: ['jpg', 'jpeg', 'png', 'gif', 'ico', 'bmp'],
     audio: ['mp3', 'wav', 'aac', 'ogg'],
     video: ['mp4', 'm4v', 'webm', 'avi', 'wmv', '3gp'],
@@ -16,11 +16,11 @@ const allowedAttachmentExts = {
     misc: ['js', 'py']
 }
 
-const allowedAttachmentTypes = Object.keys(allowedAttachmentExts);
+export const allowedAttachmentTypes = Object.keys(allowedAttachmentExts);
 
-const allowedPfpExts = ['jpeg', 'jpg', 'png'];
+export const allowedPfpExts = ['jpeg', 'jpg', 'png'];
 
-const fileSizeLimits = {
+export const fileSizeLimits = {
     image: 5 * 1024 * 1024,
     audio: 5 * 1024 * 1024,
     video: 20 * 1024 * 1024,
@@ -36,7 +36,7 @@ const fileSizeLimits = {
  * @returns {string} Type of the file
  */
 
-const getFileType = (filename) => {
+export const getFileType = (filename) => {
     const fileExt = path.extname(filename).toLowerCase().substring(1);
     for (const [type, extensions] of Object.entries(allowedAttachmentExts)) {
         if (extensions.includes(fileExt)) {
@@ -46,7 +46,7 @@ const getFileType = (filename) => {
     return 'other';
 }
 
-const isAllowedFileExts = (filename, filePurpose = 'att') => {
+export const isAllowedFileExts = (filename, filePurpose = 'att') => {
     const fileExtension = path.extname(filename).toLowerCase().substring(1);
     if (filePurpose === 'att') {
         return Object.values(allowedAttachmentExts).flat().includes(fileExtension);
@@ -57,13 +57,13 @@ const isAllowedFileExts = (filename, filePurpose = 'att') => {
     else return false;
 }
 
-const getAllowedFileExts = () => Object.values(allowedAttachmentExts).flat().includes(fileExtension);
+export const getAllowedFileExts = () => Object.values(allowedAttachmentExts).flat().includes(fileExtension);
 
 /**
  * Asynchronously create directories for various types of files.
  */
 
-const createUploadDirs = async () => {
+export const createUploadDirs = async () => {
     const dirPaths = [tempDirPath, pfpDirPath, ...Object.keys(allowedAttachmentExts).map(dir => path.resolve(uploadDirPath, dir))];
 
     await Promise.all(dirPaths.map(async dirPath => {
@@ -86,7 +86,7 @@ const createUploadDirs = async () => {
  * @param {string} filename 
  * @param {string} fileType 
  */
-const moveFile = async (filename, fileType) => {
+export const moveFile = async (filename, fileType) => {
     const tempPath = path.join(tempDirPath, filename);
     const finalPath = path.join(uploadDirPath, fileType, filename);
 
@@ -107,7 +107,7 @@ const moveFile = async (filename, fileType) => {
  * @param {string} filename 
  * @param {string} fileType 
  */
-const deleteFile = async (filename, fileType) => {
+export const deleteFile = async (filename, fileType) => {
     const currentPath = path.join(uploadDirPath, fileType, filename);
     const finalPath = path.join(tempDirPath, filename);
 
@@ -118,17 +118,4 @@ const deleteFile = async (filename, fileType) => {
         console.error(`Error moving file: ${err}`);
         throw err;
     }
-}
-
-module.exports = {
-    allowedAttachmentTypes,
-    uploadDirPath,
-    tempDirPath,
-    fileSizeLimits,
-    createUploadDirs,
-    getFileType,
-    isAllowedFileExts,
-    moveFile,
-    deleteFile,
-    getAllowedFileExts
 }

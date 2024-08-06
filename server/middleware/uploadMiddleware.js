@@ -1,5 +1,5 @@
-const multer = require('multer');
-const { fileSizeLimits, tempDirPath, getFileType, isAllowedFileExts } = require('../utils/fileUtil');
+import multer from 'multer';
+import { fileSizeLimits, tempDirPath, getFileType, isAllowedFileExts } from '../utils/fileUtil.js';
 
 const uploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -37,7 +37,7 @@ const upload = multer({
     }
 }).single('file')
 
-const uploadMiddleware = (req, res, next) => {
+export default (req, res, next) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.json({
@@ -58,5 +58,3 @@ const uploadMiddleware = (req, res, next) => {
         }
     })
 }
-
-module.exports = uploadMiddleware;

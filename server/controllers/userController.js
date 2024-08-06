@@ -1,12 +1,14 @@
-const jwt = require('jsonwebtoken');
-const config = require('../utils/config');
-const JWT_SECRET = config.get("JWT_SECRET");
-const bcrypt = require('bcryptjs');
-const User = require('../models/userModel');
-const BlacklistedToken = require('../models/blacklistedTokenModel');
-const { createAndMoveFile } = require('../controllers/fileController');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-const registerUser = async (req, res) => {
+import config from '../utils/config.js';
+import User from '../models/userModel.js';
+import BlacklistedToken from '../models/blacklistedTokenModel.js';
+import { createAndMoveFile } from '../controllers/fileController.js';
+
+const JWT_SECRET = config.get("JWT_SECRET");
+
+export const registerUser = async (req, res) => {
     const { username, password, role, filePurpose, nickname } = req.body;
     try {
 
@@ -70,7 +72,7 @@ const registerUser = async (req, res) => {
 
 }
 
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
     try {
@@ -96,7 +98,7 @@ const loginUser = async (req, res) => {
     }
 }
 
-const authenticateUser = (req, res) => {
+export const authenticateUser = (req, res) => {
     const { username, nickname, role, pfpId } = req.user;
     return res.json({
         success: true,
@@ -106,11 +108,11 @@ const authenticateUser = (req, res) => {
     });
 }
 
-const getUserProfile = (req, res) => {
+export const getUserProfile = (req, res) => {
 
 }
 
-const logoutUser = async (req, res) => {
+export const logoutUser = async (req, res) => {
     try {
         const token = req.cookies.token
         const blacklistedToken = new BlacklistedToken({ token, expiryDate: new Date((jwt.decode(token).iat + 14 * 24 * 3600) * 1000) });
@@ -130,7 +132,7 @@ const logoutUser = async (req, res) => {
     }
 }
 
-const updateUserPfp = async (req, res) => {
+export const updateUserPfp = async (req, res) => {
     try {
         const { originalname, filename } = req.file;
     }
@@ -139,7 +141,7 @@ const updateUserPfp = async (req, res) => {
     }
 }
 
-const getUserPfpByUserId = async (req, res) => {
+export const getUserPfpByUserId = async (req, res) => {
     const { userId, userRole } = req.body.user;
     if (userId) {
         try {
@@ -167,7 +169,7 @@ const getUserPfpByUserId = async (req, res) => {
     }
 }
 
-const updateUserProfile = async (req, res) => {
+export const updateUserProfile = async (req, res) => {
     const { userId, userRole } = req.body.user;
     if (userRole === 'bot') {
         res.status(401).json({
@@ -210,13 +212,3 @@ const updateUserProfile = async (req, res) => {
         }
     }
 }
-
-module.exports = {
-    registerUser,
-    loginUser,
-    getUserProfile,
-    updateUserPfp,
-    updateUserProfile,
-    authenticateUser,
-    logoutUser
-};

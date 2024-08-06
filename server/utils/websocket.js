@@ -1,12 +1,14 @@
-const WebSocket = require('ws');
-const cookie = require('cookie');
-const jwt = require('jsonwebtoken');
-const config = require('../utils/config');
+import { WebSocketServer } from "ws";
+import cookie from 'cookie';
+import jwt from 'jsonwebtoken'
+
+import config from './config.js';
+import User from '../models/userModel.js';
+import ChatMessage from '../models/chatMessageModel.js';
+import ChatRoom from '../models/chatRoomModel.js';
+import BlacklistedToken from '../models/blacklistedTokenModel.js';
+
 const JWT_SECRET = config.get("JWT_SECRET");
-const User = require('../models/userModel');
-const ChatMessage = require('../models/chatMessageModel');
-const ChatRoom = require('../models/chatRoomModel');
-const BlacklistedToken = require('../models/blacklistedTokenModel');
 
 const authenticate = async (token) => {
     try {
@@ -45,14 +47,14 @@ const authorizeUser = async (user, roomId) => {
     return chatRoom;
 };
 
-class WebSocketServer {
+class WebSocketServerClass {
     constructor() {
         this.wss = null;
         this._isInit = false
     }
 
-    initializer(server) {
-        this.wss = new WebSocket.Server({ server, path: '/ws' });
+    initialize(server) {
+        this.wss = new WebSocketServer({ server, path: '/ws' });
         this.wss.on('connection', async (ws, req) => {
             const cookies = cookie.parse(req.headers.cookie || '');
             const token = cookies.token;
@@ -314,4 +316,4 @@ class WebSocketServer {
 
 
 
-module.exports = new WebSocketServer();
+export default new WebSocketServerClass();

@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const ChatMessage = require('./chatMessageModel');
+import mongoose from "mongoose";
 
 const chatRoomSchema = new mongoose.Schema({
     roomId: { type: String, required: true, unique: true },
@@ -34,4 +33,4 @@ chatRoomSchema.pre('deleteOne', { document: true, query: false }, async function
     }
 });
 
-module.exports = mongoose.model('ChatRoom', chatRoomSchema);
+export default mongoose.model('ChatRoom', chatRoomSchema);

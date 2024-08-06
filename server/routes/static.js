@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const fileCtl = require('../controllers/fileController');
+import * as fileCtl from '../controllers/fileController.js';
 
 router.get('/pfp/:pfpId', fileCtl.getPfpByFileId);
 router.get('/file/:fileId', fileCtl.getFileByFileId);
 
-module.exports = router;
+export default router;

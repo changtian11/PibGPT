@@ -1,14 +1,14 @@
-const ChatMessage = require('../models/chatMessageModel');
-const ChatRoom = require('../models/chatRoomModel');
-const File = require('../models/fileModel');
-const { moveFile, getFileType } = require('../utils/fileUtil');
-const { ResErrorConstructor } = require('../utils/errorHandler');
+import ChatMessage from '../models/chatMessageModel.js';
+import ChatRoom from '../models/chatRoomModel.js';
+import File from '../models/fileModel.js';
+import { moveFile, getFileType } from '../utils/fileUtil.js';
+import { ResErrorConstructor } from '../utils/errorHandler.js';
 
 
 /**
  * Create a new chat room from user-end.
  */
-const createChatRoom = async (req, res) => {
+export const createChatRoom = async (req, res) => {
     const { userId } = req.user;
     const roomId = `${Date.now()}-${Math.random().toString().slice(2, 9)}`
     const newChatroom = new ChatRoom(
@@ -36,7 +36,7 @@ const createChatRoom = async (req, res) => {
 }
 
 
-const updateChatRoomTopic = async (chatRoomId, newTopic = "") => {
+export const updateChatRoomTopic = async (chatRoomId, newTopic = "") => {
     try {
         const chatRoom = ChatRoom.findOne({ roomId: chatRoomId });
         if (chatRoom) {
@@ -48,7 +48,7 @@ const updateChatRoomTopic = async (chatRoomId, newTopic = "") => {
     }
 }
 
-const getChatRoomList = async (req, res) => {
+export const getChatRoomList = async (req, res) => {
     const { userId, role } = req.user;
     try {
         let chatRooms = null
@@ -78,7 +78,7 @@ const getChatRoomList = async (req, res) => {
     }
 }
 
-const deleteChatRoomById = async (req, res) => {
+export const deleteChatRoomById = async (req, res) => {
     const { userId, role } = req.user;
     const { roomId } = req.params;
     try {
@@ -118,7 +118,7 @@ const deleteChatRoomById = async (req, res) => {
     }
 }
 
-const deleteEmptyChatRooms = async (req, res) => {
+export const deleteEmptyChatRooms = async (req, res) => {
     const { userId, role } = req.user;
     try {
         let emptyChatRooms = null
@@ -168,7 +168,7 @@ const deleteEmptyChatRooms = async (req, res) => {
     }
 }
 
-const deleteAllChatRooms = async (req, res) => {
+export const deleteAllChatRooms = async (req, res) => {
     const { userId, role } = req.user;
     try {
         let chatRoomsToDelete = null;
@@ -207,7 +207,7 @@ const deleteAllChatRooms = async (req, res) => {
     }
 }
 
-const getChatRoomMessageHistory = async (req, res) => {
+export const getChatRoomMessageHistory = async (req, res) => {
     const roomIdReg = new RegExp(/^\d{13}-\d{7}$/)
     const roomId = req.params.roomId;
     if (roomId && roomIdReg.test(roomId))
@@ -283,15 +283,4 @@ const getChatRoomMessageHistory = async (req, res) => {
             message: "Bad request"
         })
     }
-}
-
-
-module.exports = {
-    createChatRoom,
-    getChatRoomList,
-    getChatRoomMessageHistory,
-    updateChatRoomTopic,
-    deleteChatRoomById,
-    deleteEmptyChatRooms,
-    deleteAllChatRooms
 }

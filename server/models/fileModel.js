@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const path = require('path');
-const { allowedAttachmentTypes, uploadDirPath } = require('../utils/fileUtil');
+import mongoose from 'mongoose';
+import path from 'path';
+import { allowedAttachmentTypes, uploadDirPath } from '../utils/fileUtil.js';
 
 const fileTypes = ['profilePhoto', ...allowedAttachmentTypes]
 
@@ -17,4 +17,4 @@ const fileSchema = new mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('File', fileSchema);
+export default mongoose.model('File', fileSchema);

@@ -1,12 +1,12 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const fileCtl = require('../controllers/fileController');
-const userCtl = require('../controllers/userController');
-const chatCtl = require('../controllers/chatController');
+import * as fileCtl from '../controllers/fileController.js';
+import * as userCtl from '../controllers/userController.js';
+import * as chatCtl from '../controllers/chatController.js';
 
-const uploadMiddleware = require('../middleware/uploadMiddleware');
-const authMiddleware = require('../middleware/authMiddleware');
+import uploadMiddleware from '../middleware/uploadMiddleware.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 
 // User register and login
@@ -30,5 +30,4 @@ router.delete('/chatroom/all', authMiddleware, chatCtl.deleteAllChatRooms);
 // File
 router.get('/allowed-file-ext', fileCtl.getAllowedExts);
 
-
-module.exports = router;
+export default router;
