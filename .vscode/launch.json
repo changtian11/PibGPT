@@ -9,7 +9,10 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/server/server.js",
-            "runtimeExecutable": "${workspaceFolder}/server/node_modules/nodemon/bin/nodemon.js",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "nodemon"
+            ],
             "restart": true,
             "cwd": "${workspaceFolder}/server",
             "envFile": "${workspaceFolder}/server/.env.development",
@@ -47,11 +50,12 @@
             "name": "Dev Client",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/client/node_modules/vite/bin/vite.js",
             "cwd": "${workspaceFolder}/client",
-            "runtimeExecutable": "node",
+            "runtimeExecutable": "npx",
             "args": [
-                "--config vite.config.dev.ts"
+                "vite",
+                "--config",
+                "vite.config.dev.ts"
             ],
             "envFile": "${workspaceFolder}/client/.env",
             "console": "integratedTerminal",
