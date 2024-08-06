@@ -2,7 +2,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const inquirer = require('inquirer');
-const chalk = require('chalk');
+const chalk = import('chalk').then(m=>m.default);
 
 class Config {
     config = null;
