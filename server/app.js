@@ -29,6 +29,5 @@ app.use(bodyParser.urlencoded({
 app.use(express.static(path.join('public')));
 app.use('/', routes);
 wss.initializer(server);
-app.locals.wss = wss;
 
 module.exports = server;
