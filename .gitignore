@@ -15,6 +15,7 @@ dist-ssr
 /server/public/*
 /uploads/**/*
 /server/uploads/**/*
+/server/config/*
 
 # Editor directories and files
 .vscode/*
@@ -30,6 +31,3 @@ dist-ssr
 *.sw?
 *.code-workspace
 .VSCodeCounter
-
-# Configs
-./server/config/*
